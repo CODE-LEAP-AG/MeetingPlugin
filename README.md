@@ -19,7 +19,7 @@ The Assentiri PoC is a Microsoft Teams plugin designed to streamline ship sale c
 
 ## Installation
 
-1. Clone the repository:
+1. Clone the repository: (Install Git if not have )
    ```bash
    git clone https://github.com/CODE-LEAP-AG/MeetingPlugin
    ```
