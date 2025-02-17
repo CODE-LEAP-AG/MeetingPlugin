@@ -21,20 +21,13 @@ The Assentiri PoC is a Microsoft Teams plugin designed to streamline ship sale c
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/task-management-ui.git
+   git clone https://github.com/CODE-LEAP-AG/MeetingPlugin
    ```
-2. Navigate to the project directory:
-   ```bash
-   cd task-management-ui
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Start the development server:
-   ```bash
-   npm start
-   ```
+2. Install Team Tool Kit.
+3. Install Node.js.
+4. Login with teams work or school account.
+5. Add app to chat or meeting or open directly to use.
+   
 
 
 
