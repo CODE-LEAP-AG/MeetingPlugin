@@ -24,7 +24,44 @@ const initialTasks = [
     { id: 5, name: "Outstanding Crew Wages (USD)", type: "Value Input", inputType: "number", value: "", assignee: "", status: "pending", document: "Financial Statement" },
 ];
 
-const documents = ["Select Document", "Fuel and Cargo Agreement", "Technical Inspection Report", "Financial Statement"];
+const documents = ["Select Document", "Fuel and Cargo Agreement",
+    "Technical Inspection Report",
+    "Vessel Classification Certificate",
+    "Financial Statement",
+    "Insurance Policy",
+    "Delivery Agreement",
+    "Bill of Sale",
+    "Legal Terms and Conditions"];
+
+    const documentTasks: Record<string, { name: string; inputType: string }[]> = {
+        "Fuel and Cargo Agreement": [
+            { name: "Bunker Fuel Quantity (MT)", inputType: "number" },
+            { name: "Bunker Fuel Type", inputType: "text" },
+            { name: "Remaining Cargo Type", inputType: "text" },
+            { name: "Remaining Cargo Quantity (MT)", inputType: "number" },
+            { name: "Sale Includes Bunkers & Cargo?", inputType: "checkbox" },
+            { name: "Fuel/Cargo Price (USD per MT)", inputType: "number" },
+        ],
+        "Technical Inspection Report": [
+            { name: "Last Dry Dock Inspection Date", inputType: "date" },
+            { name: "Maintenance Records Available?", inputType: "checkbox" },
+            { name: "Class Certificates Status", inputType: "text" },
+            { name: "Machinery Condition Summary", inputType: "text" },
+            { name: "Hull Thickness Measurement (mm)", inputType: "number" },
+            { name: "Outstanding Repairs Needed?", inputType: "checkbox" },
+            { name: "List of Outstanding Repairs", inputType: "text" },
+        ],
+        "Financial Statement": [
+            { name: "Payment Terms", inputType: "text" },
+            { name: "Payment Method", inputType: "text" },
+            { name: "Existing Mortgages/Liens?", inputType: "checkbox" },
+            { name: "Outstanding Crew Wages (USD)", inputType: "number" },
+            { name: "Outstanding Bills (USD)", inputType: "number" },
+            { name: "Insurance Status", inputType: "text" },
+            { name: "Classification Society Fees (USD)", inputType: "number" },
+            { name: "Flag State Registration Fees (USD)", inputType: "number" },
+        ],
+    };
 const assignees = ["John Doe", "Jane Smith", "Robert Johnson"];
 
 const Task = () => {
@@ -33,16 +70,18 @@ const Task = () => {
     const [selectedTask, setSelectedTask] = useState("Select Task");
     const [selectedAssignee, setSelectedAssignee] = useState("");
 
-    const handleDocumentChange = (e) => {
+    const allTasksCompleted = tasks.every(task => task.status === "completed");
+
+    const handleDocumentChange = (e: any) => {
         setSelectedDocument(e.target.value);
         setSelectedTask("Select Task");
     };
 
-    const handleTaskChange = (e) => {
+    const handleTaskChange = (e: any) => {
         setSelectedTask(e.target.value);
     };
 
-    const handleAssigneeChange = (id, assignee) => {
+    const handleAssigneeChange = (id: number, assignee: string) => {
         setTasks((prevTasks) =>
             prevTasks.map((task) => (task.id === id ? { ...task, assignee } : task))
         );
@@ -50,35 +89,50 @@ const Task = () => {
 
     const addNewTask = () => {
         if (!selectedTask || selectedTask === "Select Task") return;
-        const taskTemplate = initialTasks.find(task => task.name === selectedTask && task.document === selectedDocument);
+        const taskTemplate = documentTasks[selectedDocument]?.find(task => task.name === selectedTask);
         if (!taskTemplate) return;
 
         const newTask = {
-            ...taskTemplate,
             id: tasks.length + 1,
+            name: taskTemplate.name,
+            type: "Value Input",
+            inputType: taskTemplate.inputType,
+            value: "",
             assignee: "",
             status: "pending",
+            document: selectedDocument,
         };
 
         setTasks([...tasks, newTask]);
     };
 
-    const deleteTask = (id:number) => {
+    const deleteTask = (id: number) => {
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
     };
-    
 
-    const toggleStatus = (id:number) => {
+
+    const toggleStatus = (id: number) => {
         setTasks((prevTasks) =>
-            prevTasks.map((task) =>
-                task.id === id ? { ...task, status: task.status === "completed" ? "pending" : "completed" } : task
-            )
+            prevTasks.map((task) => {
+                if (task.id === id) {
+                    if (task.status === "completed") {
+                        return { ...task, status: "pending", value: "" }; // Reset value when switching back to pending
+                    } else {
+                        if (!task.value || task.value === "") return task; // Prevent completion if value is empty
+                        return { ...task, status: "completed" };
+                    }
+                }
+                return task;
+            })
         );
     };
 
-    const handleInputChange = (id:number, newValue) => {
+
+    const handleInputChange = (id: number, newValue: any) => {
         setTasks((prevTasks) =>
-            prevTasks.map((task) => (task.id === id ? { ...task, value: newValue } : task))
+            prevTasks.map((task) =>
+                task.id === id ? { ...task, value: newValue, status: newValue ? "completed" : "pending" } : task
+            )
         );
     };
 
@@ -95,17 +149,12 @@ const Task = () => {
                             <MenuItem key={doc} value={doc}>{doc}</MenuItem>
                         ))}
                     </Select>
-                    <Select 
-                        value={selectedTask} 
-                        onChange={handleTaskChange} 
-                        sx={{ mb: 2, color: "blue", width: 200 }}
-                        disabled={selectedDocument === "Select Document"}
-                    >
-                        <MenuItem value="Select Task">Select Task</MenuItem>
-                        {initialTasks.filter(task => task.document === selectedDocument).map((task) => (
-                            <MenuItem key={task.name} value={task.name}>{task.name}</MenuItem>
-                        ))}
-                    </Select>
+                    <Select value={selectedTask} onChange={handleTaskChange} disabled={selectedDocument === "Select Document"} sx={{ mb: 2, width: 200 }}>
+                    <MenuItem value="Select Task">Select Task</MenuItem>
+                    {documentTasks[selectedDocument]?.map((task) => (
+                        <MenuItem key={task.name} value={task.name}>{task.name}</MenuItem>
+                    ))}
+                </Select>
                     <Button variant="contained" onClick={addNewTask} sx={{ mb: 2, width: 200 }}>Add Task</Button>
                 </Box>
             </Box>
@@ -177,6 +226,12 @@ const Task = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
+                <Button variant="contained" sx={{ backgroundColor: "orange", color: "white", "&:hover": { backgroundColor: "darkorange" } }}>
+                    Draft Contract
+                </Button>
+                <Button variant="contained" color="primary" disabled={!allTasksCompleted}>Sign Contract</Button>
+            </Box>
         </Card>
     );
 };

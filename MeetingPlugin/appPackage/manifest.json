@@ -35,6 +35,15 @@
                 "personal",
                 "groupChat",
                 "team"
+            ],
+            "context": [
+                "meetingSidePanel",
+                "channelTab",
+                "privateChatTab",
+                "meetingChatTab",
+                "meetingDetailsTab",
+                "meetingSidePanel",
+                "meetingStage"
             ]
         }
     ],
