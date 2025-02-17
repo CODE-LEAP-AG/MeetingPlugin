@@ -25,8 +25,8 @@ The Assentiri PoC is a Microsoft Teams plugin designed to streamline ship sale c
    ```
 2. Install Team Tool Kit.
 3. Install Node.js.
-4. Login with teams work or school account.
-5. Add app to chat or meeting or open directly to use.
+4. Login with MS Teams work or school account.
+5. Add app to chat or meeting to use or open directly to view the App UI.
    
 
 
