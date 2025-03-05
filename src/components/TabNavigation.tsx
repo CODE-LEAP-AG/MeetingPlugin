@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { TabList, Tab, makeStyles, shorthands, tokens } from "@fluentui/react-components";
 import Agenda from "./Agendas";
 import Task from "./Tasks";
+import Dashboard from "./Dashboard";
+import Participant from "./Participants";
 import MeetingHeader from "./MeetingHeader";
 
 const useStyles = makeStyles({
@@ -19,7 +21,7 @@ const useStyles = makeStyles({
 });
 
 const MeetingTab = () => {
-  const [selectedTab, setSelectedTab] = useState<"agenda" | "tasks" | "documents">("agenda");
+  const [selectedTab, setSelectedTab] = useState<"dashboard" | "agenda" | "tasks" | "documents" | "participants">("dashboard");
   const styles = useStyles();
 
   // Dữ liệu giả, sau này có thể thay bằng API
@@ -37,16 +39,20 @@ const MeetingTab = () => {
 
       {/* Tabs Navigation */}
       <TabList selectedValue={selectedTab} onTabSelect={(_, data) => setSelectedTab(data.value as any)}>
+        <Tab value="dashboard">Dashboard</Tab>
         <Tab value="agenda">Agenda</Tab>
         <Tab value="tasks">Tasks</Tab>
         <Tab value="documents">Documents</Tab>
+        <Tab value="participants">Participants</Tab>
       </TabList>
 
       {/* Tab Content */}
       <div className={styles.tabContent}>
+        {selectedTab === "dashboard" && <Dashboard />}
         {selectedTab === "agenda" && <Agenda />}
         {selectedTab === "tasks" && <Task />}
         {selectedTab === "documents" && <div>Documents Content</div>}
+        {selectedTab === "participants" && <Participant />}
       </div>
     </div>
   );

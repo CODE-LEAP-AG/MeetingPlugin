@@ -97,33 +97,6 @@ const Task = () => {
     };
 
     const addNewTask = () => {
-        // Reset errors
-        setErrors({
-            title: '',
-            type: '',
-            document: '',
-        });
-    
-        // Validation for Title
-        if (!newTaskName || newTaskName.trim() === "") {
-            setErrors(prev => ({ ...prev, title: "Title is required." }));
-        }
-    
-        // Validation for Type
-        if (!newTaskType) {
-            setErrors(prev => ({ ...prev, type: "Type must be selected." }));
-        }
-    
-        // Validation for Document Name
-        if (!selectedDocument || selectedDocument === "Select Document") {
-            setErrors(prev => ({ ...prev, document: "Document Name must be selected." }));
-        }
-    
-        // Check for any validation errors
-        if (errors.title || errors.type || errors.document) {
-            return; // Prevent task creation if there are errors
-        } else {
-            // If all validations pass, create the new task
             const newTask = {
                 id: tasks.length + 1,
                 name: newTaskName,
@@ -139,26 +112,7 @@ const Task = () => {
             setTasks([...tasks, newTask]);
             closeDialog();
             alert("Created Successfully");
-
-
-        // if (!selectedTask || selectedTask === "Select Task") return;
-        // const taskTemplate = documentTasks[selectedDocument]?.find(task => task.name === selectedTask);
-        // if (!taskTemplate) return;
-
-        // const newTask = {
-        //     id: tasks.length + 1,
-        //     name: taskTemplate.name,
-        //     type: "Value Input",
-        //     inputType: taskTemplate.inputType,
-        //     value: "",
-        //     assignee: "",
-        //     status: "pending",
-        //     document: selectedDocument,
-        // };
-
-        // setTasks([...tasks, newTask]);
-        }
-    };
+        };
 
     const deleteTask = (id: number) => {
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
@@ -209,17 +163,6 @@ const Task = () => {
                     <p style={{ color: "gray" }}>Manage and track ship sale closing tasks</p>
                 </Box>
                 <Box display="flex" gap={1}>
-                    {/* <Select value={selectedDocument} onChange={handleDocumentChange} sx={{ mb: 2, width: 200 }}>
-                        {documents.map((doc) => (
-                            <MenuItem key={doc} value={doc}>{doc}</MenuItem>
-                        ))}
-                    </Select>
-                    <Select value={selectedTask} onChange={handleTaskChange} disabled={selectedDocument === "Select Document"} sx={{ mb: 2, width: 200 }}>
-                    <MenuItem value="Select Task">Select Task</MenuItem>
-                    {documentTasks[selectedDocument]?.map((task) => (
-                        <MenuItem key={task.name} value={task.name}>{task.name}</MenuItem>
-                    ))}
-                </Select> */}
                     <Button variant="contained" onClick={openDialog} sx={{ mb: 2, width: 200, backgroundColor:"#ed6c02", "&:hover": {backgroundColor:"darkorange"} }}>Add Task</Button>
                 </Box>
             </Box>
