@@ -13,6 +13,12 @@ import {
     MenuItem,
     Checkbox,
     IconButton,
+    Dialog, 
+    DialogTitle, 
+    DialogContent, 
+    DialogActions, 
+    TextField,
+    Typography
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -68,7 +74,10 @@ const Task = () => {
     const [tasks, setTasks] = useState(initialTasks);
     const [selectedDocument, setSelectedDocument] = useState("Select Document");
     const [selectedTask, setSelectedTask] = useState("Select Task");
-    const [selectedAssignee, setSelectedAssignee] = useState("");
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [newTaskName, setNewTaskName] = useState("");
+    const [newTaskType, setNewTaskType] = useState("Value Input");
+    const [newDocumentName, setNewDocumentName] = useState("");
 
     const allTasksCompleted = tasks.every(task => task.status === "completed");
 
@@ -88,26 +97,82 @@ const Task = () => {
     };
 
     const addNewTask = () => {
-        if (!selectedTask || selectedTask === "Select Task") return;
-        const taskTemplate = documentTasks[selectedDocument]?.find(task => task.name === selectedTask);
-        if (!taskTemplate) return;
+        // Reset errors
+        setErrors({
+            title: '',
+            type: '',
+            document: '',
+        });
+    
+        // Validation for Title
+        if (!newTaskName || newTaskName.trim() === "") {
+            setErrors(prev => ({ ...prev, title: "Title is required." }));
+        }
+    
+        // Validation for Type
+        if (!newTaskType) {
+            setErrors(prev => ({ ...prev, type: "Type must be selected." }));
+        }
+    
+        // Validation for Document Name
+        if (!selectedDocument || selectedDocument === "Select Document") {
+            setErrors(prev => ({ ...prev, document: "Document Name must be selected." }));
+        }
+    
+        // Check for any validation errors
+        if (errors.title || errors.type || errors.document) {
+            return; // Prevent task creation if there are errors
+        } else {
+            // If all validations pass, create the new task
+            const newTask = {
+                id: tasks.length + 1,
+                name: newTaskName,
+                type: newTaskType,
+                inputType: newTaskType === "Confirmation" ? "checkbox" : "text",
+                value: "",
+                assignee: "",
+                status: "pending",
+                document: selectedDocument,
+            };
+    
+            // Update the tasks state
+            setTasks([...tasks, newTask]);
+            closeDialog();
+            alert("Created Successfully");
 
-        const newTask = {
-            id: tasks.length + 1,
-            name: taskTemplate.name,
-            type: "Value Input",
-            inputType: taskTemplate.inputType,
-            value: "",
-            assignee: "",
-            status: "pending",
-            document: selectedDocument,
-        };
 
-        setTasks([...tasks, newTask]);
+        // if (!selectedTask || selectedTask === "Select Task") return;
+        // const taskTemplate = documentTasks[selectedDocument]?.find(task => task.name === selectedTask);
+        // if (!taskTemplate) return;
+
+        // const newTask = {
+        //     id: tasks.length + 1,
+        //     name: taskTemplate.name,
+        //     type: "Value Input",
+        //     inputType: taskTemplate.inputType,
+        //     value: "",
+        //     assignee: "",
+        //     status: "pending",
+        //     document: selectedDocument,
+        // };
+
+        // setTasks([...tasks, newTask]);
+        }
     };
 
     const deleteTask = (id: number) => {
         setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+    };
+
+    const openDialog = () => {
+        setIsDialogOpen(true);
+    };
+    
+    const closeDialog = () => {
+        setIsDialogOpen(false);
+        setNewTaskName("");
+        setNewTaskType("Value Input");
+        setNewDocumentName("");
     };
 
 
@@ -144,7 +209,7 @@ const Task = () => {
                     <p style={{ color: "gray" }}>Manage and track ship sale closing tasks</p>
                 </Box>
                 <Box display="flex" gap={1}>
-                    <Select value={selectedDocument} onChange={handleDocumentChange} sx={{ mb: 2, width: 200 }}>
+                    {/* <Select value={selectedDocument} onChange={handleDocumentChange} sx={{ mb: 2, width: 200 }}>
                         {documents.map((doc) => (
                             <MenuItem key={doc} value={doc}>{doc}</MenuItem>
                         ))}
@@ -154,8 +219,8 @@ const Task = () => {
                     {documentTasks[selectedDocument]?.map((task) => (
                         <MenuItem key={task.name} value={task.name}>{task.name}</MenuItem>
                     ))}
-                </Select>
-                    <Button variant="contained" onClick={addNewTask} sx={{ mb: 2, width: 200 }}>Add Task</Button>
+                </Select> */}
+                    <Button variant="contained" onClick={openDialog} sx={{ mb: 2, width: 200, backgroundColor:"#ed6c02", "&:hover": {backgroundColor:"darkorange"} }}>Add Task</Button>
                 </Box>
             </Box>
 
@@ -232,6 +297,91 @@ const Task = () => {
                 </Button>
                 <Button variant="contained" color="primary" disabled={!allTasksCompleted}>Sign Contract</Button>
             </Box>
+
+            <Dialog open={isDialogOpen} onClose={closeDialog} fullWidth>
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Add New Task</DialogTitle>
+                <DialogContent>
+                    
+                <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant="body1" fontWeight="bold">Title</Typography>
+                    <TextField
+                    autoFocus
+                    margin="dense"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    value={newTaskName}
+                    onChange={(e) => setNewTaskName(e.target.value)}
+                />
+                </Box>
+                
+
+                {/* Task Type Selection */}
+                <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant="body1" fontWeight="bold">Type</Typography>
+                    <Select
+                        value={newTaskType}
+                        onChange={(e) => setNewTaskType(e.target.value)}
+                        fullWidth
+                        variant="outlined"
+                        sx={{
+                            mb: 2,
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: 'gray',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: 'darkgray',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                borderColor: 'black',
+                            },
+                        }}
+                    >
+                        <MenuItem value="Value Input">Value Input</MenuItem>
+                        <MenuItem value="Confirmation">Confirmation</MenuItem>
+                        <MenuItem value="Document">Document</MenuItem>
+                    </Select>
+                </Box>
+
+                {/* Document Selection */}
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant="body1" fontWeight="bold">Document Name</Typography>
+                    <Select
+                        value={selectedDocument}
+                        onChange={handleDocumentChange}
+                        sx={{ mb: 2 }}
+                        fullWidth
+                        variant="outlined"
+                    >
+                        {documents.map((doc) => (
+                            <MenuItem key={doc} value={doc}>{doc}</MenuItem>
+                        ))}
+                    </Select>
+                </Box>
+
+                <Box>
+                    <Typography variant="body1" fontWeight="bold">Task</Typography>
+                    <Select 
+                        value={selectedTask} 
+                        onChange={handleTaskChange} 
+                        disabled={selectedDocument === "Select Document"} 
+                        sx={{ mb: 2 }} 
+                        fullWidth 
+                        variant="outlined"
+                    >
+                        <MenuItem value="Select Task">Select Task</MenuItem>
+                        {documentTasks[selectedDocument]?.map((task) => (
+                            <MenuItem key={task.name} value={task.name}>{task.name}</MenuItem>
+                        ))}
+                    </Select>
+                </Box>
+                
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={closeDialog} variant="outlined">Cancel</Button>
+                <Button onClick={addNewTask} color="primary" variant="contained" sx={{ backgroundColor: 'black', color: 'white', '&:hover': { backgroundColor: 'darkgray' } }}>Add Task</Button>
+            </DialogActions>
+        </Dialog>
         </Card>
     );
 };
