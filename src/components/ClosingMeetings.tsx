@@ -37,6 +37,8 @@ const initialecordings = [
 const ClosingMeetings = () => {
     const [recordings, setRecordings] = useState(initialecordings);
     const [isRecording, setIsRecording] = useState(false);
+    const [isEditing, setIsEditing] = useState(null);
+    const [editedName, setEditedName] = useState('');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [dialogTitle, setDialogTitle] = useState('');
     const [dialogContent, setDialogContent] = useState('');
@@ -56,6 +58,27 @@ const ClosingMeetings = () => {
             setRecordings([...recordings, newRecord]);
         }
     }
+
+    const handleEditClick = (recording) => {
+        setIsEditing(recording.id);
+        setEditedName(recording.recordingName);
+    };
+
+    const handleSave = (id) => {
+        var record = recordings.find(rec => rec.id === id);
+        if(record){
+            const currRec = {
+                ...record,
+                recordingName: editedName,
+            };
+            setRecordings((prevRecordings) =>
+                prevRecordings.map((rec) =>
+                    rec.id === id ? currRec : rec // Replace the old recording with the updated one
+                )
+            );
+        };
+        setIsEditing(null);
+    };
 
     const createTranscript = (id, transcripted: boolean) => {
         // Update the transcripted state for the specific recording
@@ -154,7 +177,25 @@ const ClosingMeetings = () => {
                         {
                             recordings.map((recording) => (
                                 <TableRow key={recording.id}>
-                                    <TableCell>{recording.recordingName}</TableCell>
+                                    <TableCell>
+                                        {isEditing === recording.id ? (
+                                            <TextField
+                                                value={editedName}
+                                                onChange={(e) => setEditedName(e.target.value)}
+                                                onBlur={() => handleSave(recording.id)} // Save on blur
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleSave(recording.id); // Save on Enter
+                                                    }
+                                                }}
+                                                autoFocus
+                                            />
+                                        ) : (
+                                            <span onClick={() => handleEditClick(recording)}>
+                                                {recording.recordingName}
+                                            </span>
+                                        )}
+                                    </TableCell>
                                     <TableCell>{recording.date.toLocaleString()}</TableCell>
                                     <TableCell>
                                         <Tooltip title="View Recording" arrow>
