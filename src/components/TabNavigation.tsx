@@ -4,6 +4,7 @@ import Agenda from "./Agendas";
 import Task from "./Tasks";
 import Dashboard from "./Dashboard";
 import Participant from "./Participants";
+import ClosingMeeting from "./ClosingMeetings";
 import MeetingHeader from "./MeetingHeader";
 
 const useStyles = makeStyles({
@@ -21,12 +22,12 @@ const useStyles = makeStyles({
 });
 
 const MeetingTab = () => {
-  const [selectedTab, setSelectedTab] = useState<"dashboard" | "agenda" | "tasks" | "documents" | "participants">("dashboard");
+  const [selectedTab, setSelectedTab] = useState<"dashboard" | "agenda" | "tasks" | "documents" | "closingMeeting" | "participants">("dashboard");
   const styles = useStyles();
 
   // Dữ liệu giả, sau này có thể thay bằng API
   const meetingTitle = "Ship Sale Closing Meeting";
-  const participants = 12;
+  const participants = 8;
   const organizer = {
     name: "John Doe",
     avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg",
@@ -43,6 +44,7 @@ const MeetingTab = () => {
         <Tab value="agenda">Agenda</Tab>
         <Tab value="tasks">Tasks</Tab>
         <Tab value="documents">Documents</Tab>
+        <Tab value="closingMeeting">Closing Meeting</Tab>
         <Tab value="participants">Participants</Tab>
       </TabList>
 
@@ -52,6 +54,7 @@ const MeetingTab = () => {
         {selectedTab === "agenda" && <Agenda />}
         {selectedTab === "tasks" && <Task />}
         {selectedTab === "documents" && <div>Documents Content</div>}
+        {selectedTab === "closingMeeting" && <ClosingMeeting />}
         {selectedTab === "participants" && <Participant />}
       </div>
     </div>

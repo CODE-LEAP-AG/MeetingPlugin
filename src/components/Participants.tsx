@@ -72,11 +72,11 @@ const Participants = () => {
         resetData();
         alert("Created Successfully");
     }
-    const deleteParticipant = (id) => {
+    const deleteParticipant = (id: any) => {
         setParticipants((prevParticipants) => prevParticipants.filter((participant) => participant.id !== id));
     }
 
-    const handleRoleChange = (id, role) => {
+    const handleRoleChange = (id:any, role:any) => {
         setParticipants((prevParticipants) => 
             prevParticipants.map((participant) => 
                 participant.id === id ? { ...participant, role } : participant
@@ -97,7 +97,7 @@ const Participants = () => {
         setSelectedPermissions([]);
     }
 
-    const handlePermissionToggle = (permission) => {
+    const handlePermissionToggle = (permission: never) => {
         setSelectedPermissions((prev) => {
             if (prev.includes(permission)) {
                 // If the permission is already selected, remove it
