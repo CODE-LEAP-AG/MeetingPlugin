@@ -18,7 +18,8 @@ import {
     DialogContent, 
     DialogActions, 
     TextField,
-    Typography
+    Typography,
+    Tooltip
 } from "@mui/material";
 import {
     Share as ShareIcon,    
@@ -308,16 +309,18 @@ const Task = () => {
                                 </TableCell>
                                 <TableCell sx={{maxWidth:100}}>{task.document}</TableCell>
                                 <TableCell>
-                                    <Button
-                                    variant="outlined"
-                                    onClick={() => openSharedTaskDialog(task.id)}
-                                    sx={{color:"#000000", borderColor:"#000000"}}>
-                                        <ShareIcon />
-                                    </Button>
+                                    <Tooltip title="Share Task">
+                                        <Button
+                                        variant="outlined"
+                                        onClick={() => openSharedTaskDialog(task.id)}
+                                        sx={{}}>
+                                            <ShareIcon />
+                                        </Button>
+                                    </Tooltip>
                                     <Button
                                     variant="outlined"
                                     onClick={() => deleteTask(task.id)}
-                                    sx={{color:"#000000", borderColor:"#000000"}}>
+                                    sx={{ml:2}}>
                                         <DeleteIcon />
                                     </Button>
                                 </TableCell>

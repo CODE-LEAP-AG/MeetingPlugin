@@ -24,7 +24,7 @@ const useStyles = makeStyles({
 });
 
 const MeetingTab = () => {
-  const [selectedTab, setSelectedTab] = useState<"dashboard" | "agenda" | "closingsteps" | "tasks" | "documents" | "closingMeeting" | "participants">("dashboard");
+  const [selectedTab, setSelectedTab] = useState<"dashboard" | "closingsteps" | "closingMeeting" | "tasks" | "documents" | "participants">("dashboard");
   const styles = useStyles();
 
   // Dữ liệu giả, sau này có thể thay bằng API
@@ -43,22 +43,20 @@ const MeetingTab = () => {
       {/* Tabs Navigation */}
       <TabList selectedValue={selectedTab} onTabSelect={(_, data) => setSelectedTab(data.value as any)}>
         <Tab value="dashboard">Dashboard</Tab>
-        {/* <Tab value="agenda">Agenda</Tab> */}
         <Tab value="closingsteps">Closing Step</Tab>
+        <Tab value="closingMeeting">Closing Meeting</Tab>
         <Tab value="tasks">Tasks</Tab>
         <Tab value="documents">Documents</Tab>
-        <Tab value="closingMeeting">Closing Meeting</Tab>
         <Tab value="participants">Participants</Tab>
       </TabList>
 
       {/* Tab Content */}
       <div className={styles.tabContent}>
         {selectedTab === "dashboard" && <Dashboard />}
-        {selectedTab === "agenda" && <Agenda />}
         {selectedTab === "closingsteps" && <ClosingStep />}
+        {selectedTab === "closingMeeting" && <ClosingMeeting />}
         {selectedTab === "tasks" && <Task />}
         {selectedTab === "documents" && <Document />}
-        {selectedTab === "closingMeeting" && <ClosingMeeting />}
         {selectedTab === "participants" && <Participant />}
       </div>
     </div>
