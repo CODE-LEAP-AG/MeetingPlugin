@@ -214,6 +214,18 @@ const ClosingSteps = () => {
                                                 <Box sx={{ display: "flex", marginTop: 3, justifyContent : "space-between", alignItems: "flex-end" }}>
                                                     <h4>Step {step.stepNumber}: {step.stepDescription}</h4>
                                                     <Box>
+                                                        <Typography
+                                                                component="span"
+                                                                variant="body1"
+                                                                sx={{ 
+                                                                    bgcolor: getStatusColors(step.status || Status.Pending).backgroundColor, 
+                                                                    color: getStatusColors(step.status || Status.Pending).textColor, 
+                                                                    borderRadius: 1,
+                                                                    mr: 2
+                                                                }}
+                                                            >
+                                                                {step.status}
+                                                        </Typography>
                                                         <Tooltip title="Delete Step">
                                                             <IconButton 
                                                                 color="default"
@@ -262,14 +274,6 @@ const ClosingSteps = () => {
                                                             {taskIndex + 1}. {task.task.taskDescription}
                                                             
                                                             <Box>
-                                                                <Tooltip title="Delete Task">
-                                                                    <IconButton 
-                                                                        color="default"
-                                                                        onClick={() => handleDeleteTask(step.stepNumber, task.task.taskId)}
-                                                                    >
-                                                                        <DeleteIcon />
-                                                                    </IconButton>
-                                                                </Tooltip>
                                                                 <Typography
                                                                     component="span"
                                                                     variant="body1"
@@ -282,6 +286,14 @@ const ClosingSteps = () => {
                                                                 >
                                                                     {task.task.status}
                                                                 </Typography>
+                                                                <Tooltip title="Delete Task">
+                                                                    <IconButton 
+                                                                        color="default"
+                                                                        onClick={() => handleDeleteTask(step.stepNumber, task.task.taskId)}
+                                                                    >
+                                                                        <DeleteIcon />
+                                                                    </IconButton>
+                                                                </Tooltip>
                                                             </Box>
                                                         </Typography>
                                                     ))}
