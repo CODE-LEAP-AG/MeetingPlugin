@@ -13,7 +13,6 @@ import {
     Select,
     MenuItem,
     Checkbox,
-    IconButton,
     Dialog, 
     DialogTitle, 
     DialogContent, 
@@ -21,14 +20,35 @@ import {
     TextField,
     Typography
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+import {
+    Share as ShareIcon,    
+    Delete as DeleteIcon
+} 
+from "@mui/icons-material";
 
-const initialTasks = [
-    { id: 1, name: "Bunker Fuel Quantity (MT)", type: "Value Input", inputType: "number", value: "500", assignee: "", status: "pending", document: "Fuel and Cargo Agreement" },
-    { id: 2, name: "Sale Includes Bunkers & Cargo?", type: "Confirmation", inputType: "checkbox", value: false, assignee: "", status: "pending", document: "Fuel and Cargo Agreement" },
-    { id: 3, name: "Last Dry Dock Inspection Date", type: "Value Input", inputType: "date", value: "", assignee: "", status: "pending", document: "Technical Inspection Report" },
-    { id: 4, name: "Class Certificates Status", type: "Value Input", inputType: "text", value: "", assignee: "", status: "pending", document: "Technical Inspection Report" },
-    { id: 5, name: "Outstanding Crew Wages (USD)", type: "Value Input", inputType: "number", value: "", assignee: "", status: "pending", document: "Financial Statement" },
+enum Status {
+    Pending = "Pending",
+    In_Progress = "In Progress",
+    Complete = "Complete"
+}
+
+interface Task {
+    id: number,
+    name: string,
+    type: string,
+    inputType: string,
+    value: string | number | boolean,
+    assignee: string,
+    status: Status,
+    document: string,
+}
+
+const initialTasks: Task[] = [
+    { id: 1, name: "Bunker Fuel Quantity (MT)", type: "Value Input", inputType: "number", value: "500", assignee: "", status: Status.Pending, document: "Fuel and Cargo Agreement" },
+    { id: 2, name: "Sale Includes Bunkers & Cargo?", type: "Confirmation", inputType: "checkbox", value: false, assignee: "", status: Status.Pending, document: "Fuel and Cargo Agreement" },
+    { id: 3, name: "Last Dry Dock Inspection Date", type: "Value Input", inputType: "date", value: "", assignee: "", status: Status.Pending, document: "Technical Inspection Report" },
+    { id: 4, name: "Class Certificates Status", type: "Value Input", inputType: "text", value: "", assignee: "", status: Status.Pending, document: "Technical Inspection Report" },
+    { id: 5, name: "Outstanding Crew Wages (USD)", type: "Value Input", inputType: "number", value: "", assignee: "", status: Status.Pending, document: "Financial Statement" },
 ];
 
 const documents = ["Select Document", "Fuel and Cargo Agreement",
@@ -73,13 +93,30 @@ const assignees = ["John Doe", "Jane Smith", "Robert Johnson"];
 
 const Task = () => {
     const [tasks, setTasks] = useState(initialTasks);
+    const [taskName, setTaskName] = useState("");
+    const [taskType, setTaskType] = useState("");
+    const [linkedDocument, setLinkedDocument] = useState("");
+    const [inputField, setInputField] = useState("");
+    const [status, setStatus] = useState<Status>();
     const [selectedDocument, setSelectedDocument] = useState("Select Document");
     const [selectedTask, setSelectedTask] = useState("Select Task");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isShareDialogOpen, setIsSharedDialogOpen] = useState(false);
     const [newTaskName, setNewTaskName] = useState("");
     const [newTaskType, setNewTaskType] = useState("Value Input");
 
-    const allTasksCompleted = tasks.every(task => task.status === "completed");
+    const getStatusColors = (status: Status) => {
+        switch (status) {
+            case Status.Pending:
+                return { backgroundColor: "#fef08a", textColor: "#854D0E" };
+            case Status.In_Progress:
+                return { backgroundColor: "#bfdbfe", textColor: "#1e40af" };
+            case Status.Complete:
+                return { backgroundColor: "#bbf7d0", textColor: "#166534" };
+            default:
+                return { backgroundColor: "#ffffff", textColor: "#000000" }; // Default colors
+        }
+    };
 
     const handleDocumentChange = (e: any) => {
         setSelectedDocument(e.target.value);
@@ -96,6 +133,12 @@ const Task = () => {
         );
     };
 
+    const handleStatusChange = (id: number, status: any) => {
+        setTasks((prevTasks) =>
+            prevTasks.map((task) => (task.id === id ? { ...task, status } : task))
+        );
+    };
+
     const addNewTask = () => {
             const newTask = {
                 id: tasks.length + 1,
@@ -104,7 +147,7 @@ const Task = () => {
                 inputType: newTaskType === "Confirmation" ? "checkbox" : "text",
                 value: "",
                 assignee: "",
-                status: "pending",
+                status: Status.Pending,
                 document: selectedDocument,
             };
     
@@ -122,22 +165,38 @@ const Task = () => {
         setIsDialogOpen(true);
     };
     
+    const openSharedTaskDialog = (id: number) => {
+        var sharedTask = tasks.find((task) => task.id === id);
+        if(sharedTask){
+            setTaskName(sharedTask.name);
+            setTaskType(sharedTask.type);
+            setLinkedDocument(sharedTask.document);
+            setInputField(sharedTask.value.toString());
+            setStatus(sharedTask.status);
+        }
+        setIsSharedDialogOpen(true);
+    }
+    
     const closeDialog = () => {
         setIsDialogOpen(false);
+        setIsSharedDialogOpen(false);
         setNewTaskName("");
         setNewTaskType("Value Input");
     };
 
+    const shareTask = () => {
+        closeDialog();
+    }
 
     const toggleStatus = (id: number) => {
         setTasks((prevTasks) =>
             prevTasks.map((task) => {
                 if (task.id === id) {
-                    if (task.status === "completed") {
-                        return { ...task, status: "pending", value: "" }; // Reset value when switching back to pending
+                    if (task.status === Status.Complete) {
+                        return { ...task, status: Status.Pending, value: "" }; // Reset value when switching back to pending
                     } else {
                         if (!task.value || task.value === "") return task; // Prevent completion if value is empty
-                        return { ...task, status: "completed" };
+                        return { ...task, status: Status.Complete };
                     }
                 }
                 return task;
@@ -149,7 +208,7 @@ const Task = () => {
     const handleInputChange = (id: number, newValue: any) => {
         setTasks((prevTasks) =>
             prevTasks.map((task) =>
-                task.id === id ? { ...task, value: newValue, status: newValue ? "completed" : "pending" } : task
+                task.id === id ? { ...task, value: newValue, status: newValue ? Status.Complete : Status.Pending } : task
             )
         );
     };
@@ -184,9 +243,9 @@ const Task = () => {
                         {tasks.map((task, index) => (
                             <TableRow key={task.id}>
                                 <TableCell>{index + 1}</TableCell>
-                                <TableCell>{task.name}</TableCell>
-                                <TableCell>{task.type}</TableCell>
-                                <TableCell>
+                                <TableCell sx={{maxWidth:30}}>{task.name}</TableCell>
+                                <TableCell sx={{maxWidth:30}}>{task.type}</TableCell>
+                                <TableCell sx={{maxWidth:50}}>
                                     {task.type === "Confirmation" ? (
                                         <Checkbox
                                             checked={Boolean(task.value)}
@@ -195,17 +254,18 @@ const Task = () => {
                                     ) : (
                                         <input
                                             type={task.inputType}
-                                            style={{ border: "1px solid gray", padding: "4px", borderRadius: "4px" }}
+                                            style={{ border: "1px solid lightgray", padding: "4px", borderRadius: "4px", maxWidth: "7rem" }}
                                             value={task.value}
                                             onChange={(e) => handleInputChange(task.id, e.target.value)}
                                         />
                                     )}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell sx={{maxWidth:120}}>
                                     <Select
                                         value={task.assignee || ""}
                                         onChange={(e) => handleAssigneeChange(task.id, e.target.value)}
                                         displayEmpty
+                                        sx={{height: 30, width:160, minWidth:160, borderColor: "lightGrey"}}
                                     >
                                         <MenuItem value="">Unassigned</MenuItem>
                                         {assignees.map((assignee) => (
@@ -213,28 +273,53 @@ const Task = () => {
                                         ))}
                                     </Select>
                                 </TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="contained"
-                                        color={task.status === "completed" ? "success" : "warning"}
-                                        onClick={() => toggleStatus(task.id)}
+                                <TableCell sx={{maxWidth:110}}>
+                                    <Select
+                                        value={task.status || ""}
+                                        onChange ={(e) => handleStatusChange(task.id, e.target.value)}
+                                        displayEmpty
+                                        sx={{height:30, width: 150}}
                                     >
-                                        {task.status}
-                                    </Button>
+                                        <MenuItem key="Pending" value="Pending" 
+                                        sx={{
+                                            bgcolor:getStatusColors(Status.Pending).backgroundColor, 
+                                            color: getStatusColors(Status.Pending).textColor, 
+                                            borderRadius:2}}>
+                                            Pending
+                                        </MenuItem>
+                                        <MenuItem 
+                                        key="InProgress"
+                                        value="In Progress" 
+                                        sx={{
+                                            bgcolor:getStatusColors(Status.In_Progress).backgroundColor, 
+                                            color: getStatusColors(Status.In_Progress).textColor,
+                                            borderRadius:2}}>
+                                            In Progress
+                                        </MenuItem>
+                                        <MenuItem 
+                                        value="Complete" 
+                                        sx={{
+                                            bgcolor:getStatusColors(Status.Complete).backgroundColor, 
+                                            color: getStatusColors(Status.Complete).textColor,
+                                            borderRadius:2}}>
+                                            Complete
+                                        </MenuItem>
+                                    </Select>
                                 </TableCell>
-                                <TableCell>{task.document}</TableCell>
+                                <TableCell sx={{maxWidth:100}}>{task.document}</TableCell>
                                 <TableCell>
                                     <Button
-                                    color="error"
                                     variant="outlined"
-                                    onClick={() => deleteTask(task.id)}>
+                                    onClick={() => openSharedTaskDialog(task.id)}
+                                    sx={{color:"#000000", borderColor:"#000000"}}>
+                                        <ShareIcon />
+                                    </Button>
+                                    <Button
+                                    variant="outlined"
+                                    onClick={() => deleteTask(task.id)}
+                                    sx={{color:"#000000", borderColor:"#000000"}}>
                                         <DeleteIcon />
                                     </Button>
-                                    {/* <IconButton 
-                                    color="error" 
-                                    onClick={() => deleteTask(task.id)}>
-                                        <DeleteIcon />
-                                    </IconButton> */}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -325,7 +410,58 @@ const Task = () => {
                 <Button onClick={closeDialog} variant="outlined">Cancel</Button>
                 <Button onClick={addNewTask} color="primary" variant="contained" sx={{ backgroundColor: 'black', color: 'white', '&:hover': { backgroundColor: 'darkgray' } }}>Add Task</Button>
             </DialogActions>
-        </Dialog>
+            </Dialog>
+
+            <Dialog open={isShareDialogOpen} onClose={closeDialog} fullWidth>
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Share Task</DialogTitle>
+                <DialogContent>
+                    <Table>
+                        <TableBody>
+                            <TableRow sx={{}}>
+                                <TableCell>Task Name</TableCell>
+                                <TableCell>{taskName}</TableCell>
+                            </TableRow>
+                            <TableRow sx={{}}>
+                                <TableCell>Task Type</TableCell>
+                                <TableCell>{taskType}</TableCell>
+                            </TableRow>
+                            <TableRow sx={{}}>
+                                <TableCell>Linked Document</TableCell>
+                                <TableCell>{linkedDocument}</TableCell>
+                            </TableRow>
+                            <TableRow sx={{}}>
+                                <TableCell>Input Field</TableCell>
+                                <TableCell>
+                                    {taskType === "Confirmation" ? (
+                                        <Checkbox
+                                            checked={Boolean(inputField)}
+                                            disabled
+                                        />
+                                    ) : inputField}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow sx={{}}>
+                            <TableCell>Status</TableCell>
+                                <TableCell sx={{ bgcolor: getStatusColors(status || Status.Pending).backgroundColor, color: getStatusColors(status || Status.Pending).textColor, }}>
+                                    {status ? status : Status.Pending} {/* Display the status or a default value */}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow sx={{}}>
+                                <TableCell>Instructions</TableCell>
+                                <TableCell>
+                                    <TextField
+                                        autoFocus
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={closeDialog} variant="outlined">Cancel</Button>
+                    <Button onClick={shareTask} color="primary" variant="contained" sx={{ backgroundColor: 'black', color: 'white', '&:hover': { backgroundColor: 'darkgray' } }}>Send</Button>
+                </DialogActions>
+            </Dialog>
         </Card>
     );
 };
