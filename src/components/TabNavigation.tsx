@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { TabList, Tab, makeStyles, shorthands, tokens } from "@fluentui/react-components";
-import Agenda from "./Agendas";
-import Task from "./Tasks";
 import Dashboard from "./Dashboard";
-import Participant from "./Participants";
+import Agenda from "./Agendas";
+import ClosingStep from "./ClosingSteps";
+import Task from "./Tasks";
+import Document from "./Documents";
 import ClosingMeeting from "./ClosingMeetings";
+import Participant from "./Participants";
 import MeetingHeader from "./MeetingHeader";
 
 const useStyles = makeStyles({
@@ -22,7 +24,7 @@ const useStyles = makeStyles({
 });
 
 const MeetingTab = () => {
-  const [selectedTab, setSelectedTab] = useState<"dashboard" | "agenda" | "tasks" | "documents" | "closingMeeting" | "participants">("dashboard");
+  const [selectedTab, setSelectedTab] = useState<"dashboard" | "agenda" | "closingsteps" | "tasks" | "documents" | "closingMeeting" | "participants">("dashboard");
   const styles = useStyles();
 
   // Dữ liệu giả, sau này có thể thay bằng API
@@ -41,7 +43,8 @@ const MeetingTab = () => {
       {/* Tabs Navigation */}
       <TabList selectedValue={selectedTab} onTabSelect={(_, data) => setSelectedTab(data.value as any)}>
         <Tab value="dashboard">Dashboard</Tab>
-        <Tab value="agenda">Agenda</Tab>
+        {/* <Tab value="agenda">Agenda</Tab> */}
+        <Tab value="closingsteps">Closing Step</Tab>
         <Tab value="tasks">Tasks</Tab>
         <Tab value="documents">Documents</Tab>
         <Tab value="closingMeeting">Closing Meeting</Tab>
@@ -52,8 +55,9 @@ const MeetingTab = () => {
       <div className={styles.tabContent}>
         {selectedTab === "dashboard" && <Dashboard />}
         {selectedTab === "agenda" && <Agenda />}
+        {selectedTab === "closingsteps" && <ClosingStep />}
         {selectedTab === "tasks" && <Task />}
-        {selectedTab === "documents" && <div>Documents Content</div>}
+        {selectedTab === "documents" && <Document />}
         {selectedTab === "closingMeeting" && <ClosingMeeting />}
         {selectedTab === "participants" && <Participant />}
       </div>

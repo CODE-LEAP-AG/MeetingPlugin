@@ -97,7 +97,7 @@ const Participants = () => {
         setSelectedPermissions([]);
     }
 
-    const handlePermissionToggle = (permission: never) => {
+    const handlePermissionToggle = (permission) => {
         setSelectedPermissions((prev) => {
             if (prev.includes(permission)) {
                 // If the permission is already selected, remove it
@@ -114,7 +114,7 @@ const Participants = () => {
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
                     <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Role & Participant Management</h1>
-                    <Button variant="contained" onClick={openDialog} sx={{ mb: 2, width: 200, backgroundColor:"#ed6c02", "&:hover": {backgroundColor:"darkorange"} }}>Add Task</Button>
+                    <Button variant="contained" onClick={openDialog} sx={{ mb: 2, width: 200, backgroundColor:"#ed6c02", "&:hover": {backgroundColor:"darkorange"} }}>Add Participant</Button>
                 </Box>
             </Box>
 
@@ -168,9 +168,13 @@ const Participants = () => {
                                 </TableCell>
 
                                 <TableCell>
-                                    <IconButton color="error" onClick={() => deleteParticipant(participant.id)}>
+                                    <Button
+                                        variant="outlined"
+                                        sx={{}}
+                                        color="error"
+                                        onClick={() => deleteParticipant(participant.id)}>
                                         <DeleteIcon />
-                                    </IconButton>
+                                    </Button>   
                                 </TableCell>
                             </TableRow>
                         ))}

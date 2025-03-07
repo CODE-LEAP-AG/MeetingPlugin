@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Card, Box } from "@mui/material";
 import {
+    Card, 
+    Box,
     Table,
     TableHead,
     TableBody,
@@ -77,7 +78,6 @@ const Task = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [newTaskName, setNewTaskName] = useState("");
     const [newTaskType, setNewTaskType] = useState("Value Input");
-    const [newDocumentName, setNewDocumentName] = useState("");
 
     const allTasksCompleted = tasks.every(task => task.status === "completed");
 
@@ -126,7 +126,6 @@ const Task = () => {
         setIsDialogOpen(false);
         setNewTaskName("");
         setNewTaskType("Value Input");
-        setNewDocumentName("");
     };
 
 
@@ -225,21 +224,23 @@ const Task = () => {
                                 </TableCell>
                                 <TableCell>{task.document}</TableCell>
                                 <TableCell>
-                                    <IconButton color="error" onClick={() => deleteTask(task.id)}>
+                                    <Button
+                                    color="error"
+                                    variant="outlined"
+                                    onClick={() => deleteTask(task.id)}>
                                         <DeleteIcon />
-                                    </IconButton>
+                                    </Button>
+                                    {/* <IconButton 
+                                    color="error" 
+                                    onClick={() => deleteTask(task.id)}>
+                                        <DeleteIcon />
+                                    </IconButton> */}
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
-                <Button variant="contained" sx={{ backgroundColor: "orange", color: "white", "&:hover": { backgroundColor: "darkorange" } }}>
-                    Draft Contract
-                </Button>
-                <Button variant="contained" color="primary" disabled={!allTasksCompleted}>Sign Contract</Button>
-            </Box>
 
             <Dialog open={isDialogOpen} onClose={closeDialog} fullWidth>
                 <DialogTitle sx={{ fontWeight: 'bold' }}>Add New Task</DialogTitle>

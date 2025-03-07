@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { Card, Box } from "@mui/material";
+import {useState } from "react";
 import {
+    Card, Box,
     Table,
     TableHead,
     TableBody,
@@ -9,16 +9,12 @@ import {
     TableContainer,
     Paper,
     Button,
-    Select,
-    MenuItem,
-    Checkbox,
     IconButton,
     Dialog, 
     DialogTitle, 
     DialogContent, 
     DialogActions, 
     TextField,
-    Typography,
     Tooltip
 } from "@mui/material";
 import {
@@ -59,12 +55,12 @@ const ClosingMeetings = () => {
         }
     }
 
-    const handleEditClick = (recording) => {
+    const handleEditClick = (recording: any) => {
         setIsEditing(recording.id);
         setEditedName(recording.recordingName);
     };
 
-    const handleSave = (id) => {
+    const handleSave = (id: any) => {
         var record = recordings.find(rec => rec.id === id);
         if(record){
             const currRec = {
@@ -80,7 +76,7 @@ const ClosingMeetings = () => {
         setIsEditing(null);
     };
 
-    const createTranscript = (id, transcripted: boolean) => {
+    const createTranscript = (id: any, transcripted: boolean) => {
         // Update the transcripted state for the specific recording
         setRecordings(prevRecordings =>
             prevRecordings.map(recording =>
@@ -100,7 +96,7 @@ const ClosingMeetings = () => {
         }
     };
 
-    const deleteRecord = (id) => {
+    const deleteRecord = (id: any) => {
         openDialog();
         var record = recordings.find(rec => rec.id === id);
             if(record){
@@ -133,7 +129,7 @@ const ClosingMeetings = () => {
                 );
             }
     }
-    const approveDeleteRecord = (id) => {
+    const approveDeleteRecord = (id: any) => {
         setRecordings((prevRecords) => prevRecords.filter((record) => record.id !== id));
         closeDialog();
     }
@@ -199,23 +195,34 @@ const ClosingMeetings = () => {
                                     <TableCell>{recording.date.toLocaleString()}</TableCell>
                                     <TableCell>
                                         <Tooltip title="View Recording" arrow>
-                                            <IconButton color="default">
-                                                <VisibilityIcon />
-                                            </IconButton>
+                                            <Button
+                                            variant="outlined"
+                                            sx={{}}
+                                            color="primary">
+                                            <VisibilityIcon />
+                                            </Button>
                                         </Tooltip>
                                     </TableCell>
                                     <TableCell>
                                         <Tooltip title={recording.transcripted ? "View Transcript" : "Generate Transcript"}> 
-                                            <IconButton color="default" onClick={() => createTranscript(recording.id, recording.transcripted)}>
-                                                {recording.transcripted ? <DescriptionIcon /> : <MicIcon />}
-                                            </IconButton>
+                                            <Button
+                                            variant="outlined"
+                                            sx={{}}
+                                            color="primary"
+                                            onClick={() => createTranscript(recording.id, recording.transcripted)}>
+                                            {recording.transcripted ? <DescriptionIcon /> : <MicIcon />}
+                                            </Button>
                                         </Tooltip>
                                     </TableCell>
                                     <TableCell>
                                         <Tooltip title="Delete Recording" arrow>
-                                            <IconButton color="error" onClick={() => deleteRecord(recording.id)}>
-                                                <DeleteIcon />
-                                            </IconButton>
+                                            <Button
+                                            variant="outlined"
+                                            sx={{}}
+                                            color="error"
+                                            onClick={() => deleteRecord(recording.id)}>
+                                            <DeleteIcon />
+                                            </Button>
                                         </Tooltip>
                                     </TableCell>
                                 </TableRow>
