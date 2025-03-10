@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { TabList, Tab, makeStyles, shorthands, tokens } from "@fluentui/react-components";
+import Dashboard from "./Dashboard";
 import Agenda from "./Agendas";
+import ClosingStep from "./ClosingSteps";
 import Task from "./Tasks";
+import Document from "./Documents";
+import ClosingMeeting from "./ClosingMeetings";
+import Participant from "./Participants";
 import MeetingHeader from "./MeetingHeader";
 
 const useStyles = makeStyles({
@@ -19,12 +24,12 @@ const useStyles = makeStyles({
 });
 
 const MeetingTab = () => {
-  const [selectedTab, setSelectedTab] = useState<"agenda" | "tasks" | "documents">("agenda");
+  const [selectedTab, setSelectedTab] = useState<"dashboard" | "closingsteps" | "closingMeeting" | "tasks" | "documents" | "participants">("dashboard");
   const styles = useStyles();
 
   // Dữ liệu giả, sau này có thể thay bằng API
   const meetingTitle = "Ship Sale Closing Meeting";
-  const participants = 12;
+  const participants = 8;
   const organizer = {
     name: "John Doe",
     avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg",
@@ -37,16 +42,22 @@ const MeetingTab = () => {
 
       {/* Tabs Navigation */}
       <TabList selectedValue={selectedTab} onTabSelect={(_, data) => setSelectedTab(data.value as any)}>
-        <Tab value="agenda">Agenda</Tab>
+        <Tab value="dashboard">Dashboard</Tab>
+        <Tab value="closingsteps">Closing Step</Tab>
+        <Tab value="closingMeeting">Closing Meeting</Tab>
         <Tab value="tasks">Tasks</Tab>
         <Tab value="documents">Documents</Tab>
+        <Tab value="participants">Participants</Tab>
       </TabList>
 
       {/* Tab Content */}
       <div className={styles.tabContent}>
-        {selectedTab === "agenda" && <Agenda />}
+        {selectedTab === "dashboard" && <Dashboard />}
+        {selectedTab === "closingsteps" && <ClosingStep />}
+        {selectedTab === "closingMeeting" && <ClosingMeeting />}
         {selectedTab === "tasks" && <Task />}
-        {selectedTab === "documents" && <div>Documents Content</div>}
+        {selectedTab === "documents" && <Document />}
+        {selectedTab === "participants" && <Participant />}
       </div>
     </div>
   );
