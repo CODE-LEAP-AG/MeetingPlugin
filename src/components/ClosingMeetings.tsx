@@ -196,9 +196,9 @@ const ClosingMeetings = () => {
                                     <TableCell>
                                         <Tooltip title="View Recording" arrow>
                                             <Button
-                                            variant="outlined"
+                                            variant="text"
                                             sx={{}}
-                                            color="primary">
+                                            color="inherit">
                                             <VisibilityIcon />
                                             </Button>
                                         </Tooltip>
@@ -206,9 +206,9 @@ const ClosingMeetings = () => {
                                     <TableCell>
                                         <Tooltip title={recording.transcripted ? "View Transcript" : "Generate Transcript"}> 
                                             <Button
-                                            variant="outlined"
+                                            variant="text"
                                             sx={{}}
-                                            color="primary"
+                                            color="inherit"
                                             onClick={() => createTranscript(recording.id, recording.transcripted)}>
                                             {recording.transcripted ? <DescriptionIcon /> : <MicIcon />}
                                             </Button>
@@ -217,9 +217,9 @@ const ClosingMeetings = () => {
                                     <TableCell>
                                         <Tooltip title="Delete Recording" arrow>
                                             <Button
-                                            variant="outlined"
+                                            variant="text"
                                             sx={{}}
-                                            color="error"
+                                            color="inherit"
                                             onClick={() => deleteRecord(recording.id)}>
                                             <DeleteIcon />
                                             </Button>

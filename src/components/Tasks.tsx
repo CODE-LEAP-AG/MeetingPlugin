@@ -312,15 +312,17 @@ const Task = () => {
                                     <Tooltip title="Share Task">
                                         <Button
                                         variant="outlined"
+                                        color="inherit"
                                         onClick={() => openSharedTaskDialog(task.id)}
                                         sx={{}}>
                                             <ShareIcon />
                                         </Button>
                                     </Tooltip>
                                     <Button
-                                    variant="outlined"
-                                    onClick={() => deleteTask(task.id)}
-                                    sx={{ml:2}}>
+                                        variant="outlined"
+                                        color="inherit"
+                                        onClick={() => deleteTask(task.id)}
+                                        sx={{ml:2}}>
                                         <DeleteIcon />
                                     </Button>
                                 </TableCell>

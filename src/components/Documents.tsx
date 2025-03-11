@@ -91,7 +91,7 @@ const Documents = () => {
     const [documentId, setDocumentId] = useState(0);
     const [draftDialogTitle, setDraftDialogTitle] = useState("");
     const [shareDialogTitle, setShareDialogTitle] = useState("");
-    const [users, setUsers] = useState<Participant[]>(Participants);
+    const [users] = useState<Participant[]>(Participants);
     const [userId, setUserId] = useState(0);
     const [authorize,setAuthorize] = useState("");
 
@@ -300,6 +300,7 @@ const Documents = () => {
                                         <Tooltip title="Preview" arrow>
                                             <Button
                                                 variant="outlined"
+                                                color="inherit"
                                                 sx={{}}
                                                 onClick={() => openDraftDocumentDialog(document.Id)} >
                                                 <VisibilityIcon />
@@ -317,7 +318,7 @@ const Documents = () => {
                                         >
                                             <Button
                                                 variant="outlined"
-                                                color="primary"
+                                                color="inherit"
                                                 onClick={() => changeDocumentStatus(document.Id)}
                                                 disabled={document.Status === Status.Released ? true: false}
                                             >
@@ -331,6 +332,7 @@ const Documents = () => {
                                         <Tooltip title="Share Document">
                                             <Button
                                                 variant="outlined"
+                                                color="inherit"
                                                 sx={{}}
                                                 onClick={() => openSharedDocumentDialog(document.Id)}>
                                                 <ShareIcon />
@@ -340,8 +342,8 @@ const Documents = () => {
                                     <TableCell>
                                         <Button
                                             variant="outlined"
+                                            color="inherit"
                                             sx={{}}
-                                            color="error"
                                             onClick={() => deleteDocument(document.Id)}>
                                             <DeleteIcon />
                                         </Button>
