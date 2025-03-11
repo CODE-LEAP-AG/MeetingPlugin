@@ -9,7 +9,6 @@ import {
     TableContainer,
     Paper,
     Button,
-    IconButton,
     Dialog, 
     DialogTitle, 
     DialogContent, 
@@ -146,17 +145,18 @@ const ClosingMeetings = () => {
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
                     <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>&nbsp; Closing Meeting</h1>
-                    <Button 
+
+                </Box>
+                <Button 
                     variant="contained" 
                     onClick={toggleRecording} 
                     sx={{ 
                         mb: 2, 
                         width: 200, 
-                        backgroundColor: isRecording ? "Red" : "Black"
+                        backgroundColor: isRecording ? "Red" : "Black",
                         }}>
                         {isRecording ? "Stop Recording" : "Start Recording"}
-                    </Button>
-                </Box>
+                </Button>
             </Box>
             <TableContainer component={Paper} sx={{mt:2}}>
                 <Table>

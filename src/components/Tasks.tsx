@@ -52,7 +52,6 @@ const initialTasks: Task[] = [
 ];
 
 const documents = [
-    "Select Document", 
     "Fuel and Cargo Agreement",
     "Technical Inspection Report",
     "Vessel Classification Certificate",
@@ -72,8 +71,8 @@ const Task = () => {
         isShareOpen: false,
         newTask: {
             name: "",
-            type: "Value Input",
-            document: "Select Document",
+            type: "",
+            document: "",
         },
         sharedTask: {
             name: "",
@@ -82,6 +81,16 @@ const Task = () => {
             value: "",
             status: Status.Pending,
         }
+    });
+    const [addTaskError, setAddTaskError] = useState({
+        title: false,
+        type: false,
+        documentName: false
+    });
+    const [addTaskErrorMessage, setAddTaskErrorMessage] = useState({
+        title: "",
+        type: "",
+        documentName: ""
     });
 
     const getStatusColors = (status: Status) => {
@@ -119,8 +128,8 @@ const Task = () => {
             isShareOpen: false,
             newTask: {
                 name: "",
-                type: "Value Input",
-                document: "Select Document",
+                type: "",
+                document: "",
             },
             sharedTask: {
                 name: "",
@@ -133,6 +142,31 @@ const Task = () => {
     };
 
     const addNewTask = () => {
+        // Reset error states
+        setAddTaskError({ title: false, type: false, documentName: false});
+        setAddTaskErrorMessage({title: "", type: "", documentName: "" });
+
+        // Validation
+        let hasError = false;
+
+        if (!dialogState.newTask.name) {
+            setAddTaskErrorMessage(prev => ({ ...prev, title: "This field is required" }));
+            setAddTaskError(prev => ({ ...prev, title: true }));
+            hasError = true;
+        }
+        if (!dialogState.newTask.type) {
+            setAddTaskErrorMessage(prev => ({ ...prev, type: "This field is required" }));
+            setAddTaskError(prev => ({ ...prev, type: true }));
+            hasError = true;
+        }
+        if (!dialogState.newTask.document) {
+            setAddTaskErrorMessage(prev => ({ ...prev, documentName: "This field is required" }));
+            setAddTaskError(prev => ({ ...prev, documentName: true }));
+            hasError = true;
+        }
+
+        if (hasError) return; // Stop execution if there are errors
+
         const newTask: Task = {
             id: tasks.length + 1,
             name: dialogState.newTask.name,
@@ -180,7 +214,16 @@ const Task = () => {
                     <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Task Management</h1>
                     <p style={{ color: "gray" }}>Manage and track ship sale closing tasks</p>
                 </Box>
-                <Button variant="contained" onClick={handleDialogOpen} sx={{ mb: 2, width: 200, backgroundColor: "#ed6c02", "&:hover": { backgroundColor: "darkorange" } }}>Add Task</Button>
+                <Button 
+                    variant="contained" 
+                    onClick={handleDialogOpen} 
+                    sx={{ 
+                        mb: 2, 
+                        width: 200, 
+                        backgroundColor: "black", 
+                        "&:hover": { backgroundColor:"darkorange", color:"black"} }}>
+                        Add Task
+                </Button>
             </Box>
 
             <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -300,46 +343,66 @@ const Task = () => {
             <Dialog open={dialogState.isOpen} onClose={closeDialog} fullWidth>
                 <DialogTitle sx={{ fontWeight: 'bold' }}>Add New Task</DialogTitle>
                 <DialogContent>
-                    <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="body1" fontWeight="bold">Title</Typography>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            type="text"
-                            fullWidth
-                            variant="outlined"
-                            value={dialogState.newTask.name}
-                            onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, name: e.target.value } }))}
-                        />
-                    </Box>
-
-                    <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="body1" fontWeight="bold">Type</Typography>
-                        <Select
-                            value={dialogState.newTask.type}
-                            onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, type: e.target.value } }))}
-                            fullWidth
-                            variant="outlined"
-                        >
-                            <MenuItem value="Value Input">Value Input</MenuItem>
-                            <MenuItem value="Confirmation">Confirmation</MenuItem>
-                            <MenuItem value="Document">Document</MenuItem>
-                        </Select>
-                    </Box>
-
-                    <Box sx={{ mb: 2 }}>
-                        <Typography variant="body1" fontWeight="bold">Document Name</Typography>
-                        <Select
-                            value={dialogState.newTask.document}
-                            onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, document: e.target.value } }))}
-                            fullWidth
-                            variant="outlined"
-                        >
-                            {documents.map((doc) => (
-                                <MenuItem key={doc} value={doc}>{doc}</MenuItem>
-                            ))}
-                        </Select>
-                    </Box>
+                    <TableContainer>
+                        <Table>
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>Title</Typography></TableCell>
+                                    <TableCell>
+                                        <TextField
+                                            autoFocus
+                                            margin="dense"
+                                            type="text"
+                                            fullWidth
+                                            variant="outlined"
+                                            value={dialogState.newTask.name}
+                                            onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, name: e.target.value } }))}
+                                            error={addTaskError.title}
+                                            helperText={addTaskErrorMessage.title}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>Type</Typography></TableCell>
+                                    <TableCell>
+                                        <Box>
+                                            {addTaskErrorMessage.type && <Typography color="error">{addTaskErrorMessage.type}</Typography>}
+                                            <Select
+                                            value={dialogState.newTask.type}
+                                            onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, type: e.target.value } }))}
+                                            fullWidth
+                                            variant="outlined"
+                                            error={addTaskError.type}
+                                            >
+                                                <MenuItem value="Value Input">Value Input</MenuItem>
+                                                <MenuItem value="Confirmation">Confirmation</MenuItem>
+                                                <MenuItem value="Document">Document</MenuItem>
+                                            </Select>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>Document Name</Typography> </TableCell>
+                                    <TableCell>
+                                        <Box>
+                                            {addTaskErrorMessage.documentName && <Typography color="error">{addTaskErrorMessage.documentName}</Typography>}
+                                            <Select
+                                                value={dialogState.newTask.document}
+                                                onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, document: e.target.value } }))}
+                                                fullWidth
+                                                variant="outlined"
+                                                error={addTaskError.documentName}
+                                            >
+                                                {documents.map((doc) => (
+                                                    <MenuItem key={doc} value={doc}>{doc}</MenuItem>
+                                                ))}
+                                            </Select>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={closeDialog} variant="outlined">Cancel</Button>
