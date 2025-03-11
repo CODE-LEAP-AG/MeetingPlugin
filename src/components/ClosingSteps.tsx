@@ -1,14 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
     Card, Box,
     Typography,
-    Paper,
     Button,
     IconButton,
-    Dialog, 
-    DialogTitle, 
-    DialogContent, 
-    DialogActions, 
     TextField,
     Tooltip,
     MenuItem,
@@ -63,10 +58,11 @@ const initialTasks: Task[] = [
 // Define a functional component for the Closing Steps management
 const ClosingSteps = () => {
     const [steps, setSteps] = useState<Step[]>(initialSteps);
-    const [tasks, setTasks] = useState<Task[]>(initialTasks);
     const [newStepDescription, setNewStepDescription] = useState<string>("");
     const [selectedTask, setSelectedTask] = useState(Array(steps.length).fill(''));
-
+    const [error, setError] = useState(false);
+    const [helperText, setHelperText] = useState('');
+    
     const getStatusColors = (status: Status) => {
         switch (status) {
             case Status.Pending:
@@ -81,14 +77,22 @@ const ClosingSteps = () => {
     };
 
     const handleAddStep = () => {
-        const nextStepNumber = steps.length + 1;
-        setSteps([...steps, {
-            stepNumber: nextStepNumber,
-            stepDescription: newStepDescription,
-            tasks: [],
-            status: Status.Pending
-        }]);
-        setNewStepDescription("");
+        // Trim the input to check for empty or whitespace-only input
+        if (!newStepDescription.trim()) {
+            setError(true);
+            setHelperText("This field is required")
+        } else {
+            setError(false);
+            setHelperText(""); 
+            const nextStepNumber = steps.length + 1;
+            setSteps([...steps, {
+                stepNumber: nextStepNumber,
+                stepDescription: newStepDescription,
+                tasks: [],
+                status: Status.Pending
+            }]);
+            setNewStepDescription("");
+        }
     };
 
     const handleDeleteStep = (stepNumber: number) => {
@@ -188,16 +192,23 @@ const ClosingSteps = () => {
                         Closing Step Management
                     </h1>
                 </Box>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mt: 2, mb: 2, minHeight: 100 }}>
                     <TextField
                         value={newStepDescription}
                         onChange={(e) => setNewStepDescription(e.target.value)}
                         variant="outlined"
                         fullWidth
                         placeholder="New Step Description"
-                        sx={{ mt: 2, mb: 2 }}
+                        sx={{ height: 50, mr:2}}
+                        InputProps={{
+                            style: {
+                                height: '50px', // Set the height explicitly
+                            },
+                        }}
+                        error={error}
+                        helperText={helperText}
                     />
-                    <Button variant="contained" color="primary" onClick={handleAddStep} sx={{ width: 150, mt: 2, mb: 2, height: 50, backgroundColor: "black" }}>
+                    <Button variant="contained" color="primary" onClick={handleAddStep} sx={{ width: 200, height: 50, backgroundColor: "black" }}>
                         Add Step
                     </Button>
                 </Box>
@@ -210,9 +221,9 @@ const ClosingSteps = () => {
                                 steps.map((step, index) => (
                                     <Draggable key={step.stepNumber} draggableId={String(step.stepNumber)} index={index}>
                                         {(provided) => (
-                                            <Box ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} sx={{ justifyContent: "space-between", backgroundColor: "#F3F4F6", pr: 2, pl: 2 }}>
+                                            <Box ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} sx={{ justifyContent: "space-between", backgroundColor: "#DDDDDD", pr: 2, pl: 2 }}>
                                                 <Box sx={{ display: "flex", marginTop: 3, justifyContent : "space-between", alignItems: "flex-end" }}>
-                                                    <h4>Step {step.stepNumber}: {step.stepDescription}</h4>
+                                                    <h3>Step {step.stepNumber}: {step.stepDescription}</h3>
                                                     <Box>
                                                         <Typography
                                                                 component="span"
@@ -221,18 +232,22 @@ const ClosingSteps = () => {
                                                                     bgcolor: getStatusColors(step.status || Status.Pending).backgroundColor, 
                                                                     color: getStatusColors(step.status || Status.Pending).textColor, 
                                                                     borderRadius: 1,
-                                                                    mr: 2
+                                                                    border:2,
+                                                                    paddingBlock:1,
+                                                                    paddingLeft:2,
+                                                                    paddingRight:2
                                                                 }}
                                                             >
                                                                 {step.status}
                                                         </Typography>
-                                                        <Tooltip title="Delete Step">
-                                                            <IconButton 
-                                                                color="default"
-                                                                onClick={() => handleDeleteStep(step.stepNumber)}
-                                                            >
-                                                                <DeleteIcon />
-                                                            </IconButton>
+                                                        <Tooltip title="Delete Step" arrow>
+                                                            <Button
+                                                            variant="text"
+                                                            sx={{}}
+                                                            color="inherit"
+                                                            onClick={() => handleDeleteStep(step.stepNumber)}>
+                                                            <DeleteIcon />
+                                                            </Button>
                                                         </Tooltip>
                                                     </Box>
                                                 </Box>
@@ -246,10 +261,10 @@ const ClosingSteps = () => {
                                                                 newSelected[index] = e.target.value ? Number(e.target.value) : null; // Convert to number or null
                                                                 return newSelected;
                                                             })}
-                                                            sx={{ mr: 2, minWidth: 600 }}
+                                                            sx={{ minWidth: 600}}
                                                             displayEmpty
                                                         >
-                                                            <MenuItem value="" disabled>Select a task</MenuItem>
+                                                            <MenuItem value="" disabled>Select a task to add</MenuItem>
                                                             {initialTasks.filter(task => 
                                                                 !steps[index].tasks.some(stepTask => stepTask.task.taskId === task.taskId) // Exclude already added tasks
                                                             ).map((task) => (
@@ -261,34 +276,52 @@ const ClosingSteps = () => {
                                                         variant="contained" 
                                                         color="primary" 
                                                         onClick={() => handleAddTask(step.stepNumber, index)} 
-                                                        sx={{ width: 150, mt: 2, mb: 2, height: 50, backgroundColor: "black" }}
+                                                        sx={{ width: 150, mt: 2, mb: 2, ml:2,height: 50, backgroundColor: "black" }}
                                                         disabled={!selectedTask[index]} // Disable button if no task is selected
                                                     >
                                                         <AddIcon /> Add Task
                                                     </Button>
                                                 </Box>
 
-                                                <Box sx={{ alignItems: "center" }}>
+                                                <Box sx={{ alignItems: "center", paddingBottom:3  }}>
                                                     {step.tasks.map((task, taskIndex) => (
-                                                        <Typography key={task.task.taskId} sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", border: 2, mt: 2, mb: 2, height: 40, borderColor: "lightgrey" }}>
-                                                            {taskIndex + 1}. {task.task.taskDescription}
+                                                        <Typography 
+                                                            key={task.task.taskId} 
+                                                            sx={{ 
+                                                                display: "flex", 
+                                                                justifyContent: "space-between", 
+                                                                alignItems: "center", // Center align items vertically
+                                                                border: 2, 
+                                                                mt: 2, 
+                                                                height: 50, 
+                                                                borderColor: "lightgrey", 
+                                                                background: "#FFFFFF",
+                                                                padding: '0 8px', // Optional: Add some padding for better spacing
+                                                            }}
+                                                        >
+                                                            <span><span style={{fontWeight:"bold"}}>{taskIndex + 1}.</span> {task.task.taskDescription}</span>
                                                             
-                                                            <Box>
+                                                            <Box sx={{ display: "flex", alignItems: "center" }}> {/* Center align items in this box as well */}
                                                                 <Typography
                                                                     component="span"
                                                                     variant="body1"
                                                                     sx={{ 
                                                                         bgcolor: getStatusColors(task.task.status || Status.Pending).backgroundColor, 
                                                                         color: getStatusColors(task.task.status || Status.Pending).textColor, 
-                                                                        borderRadius: 1,
-                                                                        mr: 2
+                                                                        borderRadius: 4,
+                                                                        mr: 2,
+                                                                        paddingBlock:0.5,
+                                                                        paddingLeft:1,
+                                                                        paddingRight:1,
+                                                                        fontSize:"14px",
+                                                                        fontWeight:"bold"
                                                                     }}
                                                                 >
                                                                     {task.task.status}
                                                                 </Typography>
                                                                 <Tooltip title="Delete Task">
                                                                     <IconButton 
-                                                                        color="default"
+                                                                        sx={{color:"#999999"}}
                                                                         onClick={() => handleDeleteTask(step.stepNumber, task.task.taskId)}
                                                                     >
                                                                         <DeleteIcon />
