@@ -291,7 +291,15 @@ const Documents = () => {
                                             variant="contained"
                                             sx={{backgroundColor: getStatusColors(document.Status).backgroundColor,
                                                 color: getStatusColors(document.Status).textColor,
-                                                minWidth: 125}}
+                                                minWidth: 125,
+                                                borderRadius: 4,
+                                                mr: 2,
+                                                paddingBlock:0.5,
+                                                paddingLeft:1,
+                                                paddingRight:1,
+                                                fontSize:"14px",
+                                                fontWeight:"bold",
+                                                "&:hover":{backgroundColor:"#444444"}}}
                                         >
                                             {document.Status}
                                         </Button>
@@ -299,7 +307,7 @@ const Documents = () => {
                                     <TableCell>
                                         <Tooltip title="Preview" arrow>
                                             <Button
-                                                variant="outlined"
+                                                variant="text"
                                                 color="inherit"
                                                 sx={{}}
                                                 onClick={() => openDraftDocumentDialog(document.Id)} >
@@ -317,7 +325,7 @@ const Documents = () => {
                                             }
                                         >
                                             <Button
-                                                variant="outlined"
+                                                variant="text"
                                                 color="inherit"
                                                 onClick={() => changeDocumentStatus(document.Id)}
                                                 disabled={document.Status === Status.Released ? true: false}
@@ -331,7 +339,7 @@ const Documents = () => {
                                     <TableCell>
                                         <Tooltip title="Share Document">
                                             <Button
-                                                variant="outlined"
+                                                variant="text"
                                                 color="inherit"
                                                 sx={{}}
                                                 onClick={() => openSharedDocumentDialog(document.Id)}>
@@ -341,7 +349,7 @@ const Documents = () => {
                                     </TableCell>
                                     <TableCell>
                                         <Button
-                                            variant="outlined"
+                                            variant="text"
                                             color="inherit"
                                             sx={{}}
                                             onClick={() => deleteDocument(document.Id)}>
