@@ -1,14 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
     Card, Box,
     Typography,
-    Paper,
     Button,
     IconButton,
-    Dialog, 
-    DialogTitle, 
-    DialogContent, 
-    DialogActions, 
     TextField,
     Tooltip,
     MenuItem,
@@ -63,7 +58,6 @@ const initialTasks: Task[] = [
 // Define a functional component for the Closing Steps management
 const ClosingSteps = () => {
     const [steps, setSteps] = useState<Step[]>(initialSteps);
-    const [tasks, setTasks] = useState<Task[]>(initialTasks);
     const [newStepDescription, setNewStepDescription] = useState<string>("");
     const [selectedTask, setSelectedTask] = useState(Array(steps.length).fill(''));
     const [error, setError] = useState(false);
