@@ -11,8 +11,6 @@ import {
     Button,
     Select,
     MenuItem,
-    Checkbox,
-    IconButton,
     Dialog, 
     DialogTitle, 
     DialogContent, 
@@ -65,8 +63,24 @@ const Participants = () => {
     const [newName, setNewName] = useState("");
     const [selectedRole, setSelectedRole] = useState("");
     const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>([]);
+    const [error, setError] = useState({
+        name: false,
+    });
+    const [errorMessage, setErrorMessage] = useState({
+        name:""
+    })
 
     const addParticipant = () => {
+        setError({name:false});
+        setErrorMessage({name:""});
+        let hasError = false;
+        if(!newName){
+            setErrorMessage(prev => ({ ...prev, name: "This field is required" }));
+            setError(prev => ({ ...prev, name: true }));
+            hasError = true;
+        }
+        if(hasError) return;
+
         const newParticipant: User ={
             id: participants.length + 1,
             name: newName,
@@ -149,8 +163,18 @@ const Participants = () => {
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
                     <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Role & Participant Management</h1>
-                    <Button variant="contained" onClick={openDialog} sx={{ mb: 2, width: 200, backgroundColor:"#ed6c02", "&:hover": {backgroundColor:"darkorange"} }}>Add Participant</Button>
                 </Box>
+                <Button 
+                variant="contained" 
+                onClick={openDialog} 
+                sx={{ 
+                    mb: 2, 
+                    width: 200, 
+                    backgroundColor:"black", 
+                    "&:hover": {backgroundColor:"darkorange", color:"black"} }}>
+                    Add Participant
+                </Button>
+
             </Box>
 
             <TableContainer component={Paper} sx={{ mt: 2, width: "100%"}}>
@@ -260,6 +284,8 @@ const Participants = () => {
                         variant="outlined"
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
+                        error={error.name}
+                        helperText={errorMessage.name}
                     />
                     </Box>
 

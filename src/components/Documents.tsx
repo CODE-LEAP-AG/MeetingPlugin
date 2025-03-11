@@ -85,7 +85,7 @@ const Documents = () => {
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [isSharedDialogOpen, setIsSharedDialogOpen] = useState(false);
     const [newTitle, setNewTitle] = useState("");
-    const [newCategory, setNewCategory] = useState("Document");
+    const [newCategory, setNewCategory] = useState("");
     const [newURL, setNewURL] = useState("");
     const [documents, setDocuments] = useState(initialDocuments);
     const [documentId, setDocumentId] = useState(0);
@@ -94,6 +94,24 @@ const Documents = () => {
     const [users] = useState<Participant[]>(Participants);
     const [userId, setUserId] = useState(0);
     const [authorize,setAuthorize] = useState("");
+    const [documentError, setDocumentError] = useState({
+        title: false,
+        url: false,
+        category: false
+    });
+    const [documentErrorMessage, setDocumentErrorMessage] = useState({
+        title: "",
+        url: "",
+        category: ""
+    });
+    const [shareDocumentError, setShareDocumentError] = useState({
+        recipient: false,
+        action: false,
+    });
+    const [shareDocumentErrorMessage, setShareDocumentErrorMessage] = useState({
+        recipient:"",
+        action:""
+    })
 
     const getUser = (id:number) => {
         var result = users.find((user) => user.Id === id);
@@ -144,6 +162,8 @@ const Documents = () => {
     const openSharedDocumentDialog = (docId: number) => {
         var result = documents.find((doc) => doc.Id === docId);
         if(result){
+            setUserId(0);
+            setAuthorize("");
             setIsSharedDialogOpen(true);
             setShareDialogTitle(result.DocumentName);
             setDocumentId(docId);
@@ -157,11 +177,29 @@ const Documents = () => {
     }
 
     const addShareRecipient = () => {
+        setShareDocumentError({recipient:false, action: false});
+        setShareDocumentErrorMessage({recipient:"", action:""});
+
+        let hasError = false;
+
+        if(!userId){
+            setShareDocumentErrorMessage(prev => ({ ...prev, recipient: "This field is required" }));
+            setShareDocumentError(prev => ({ ...prev, recipient: true }));
+            hasError = true;
+        } if (!authorize){
+            setShareDocumentErrorMessage(prev => ({ ...prev, action: "This field is required" }));
+            setShareDocumentError(prev => ({ ...prev, action: true }));
+            hasError = true;
+        }
+        if(hasError) return;
+
         const newShareRecipient = {
             UserId: userId,
             Authorize: authorize
         };
 
+        setUserId(0);
+        setAuthorize("");
         setDocuments(prevDocuments => 
             prevDocuments.map(doc => {
                 if (doc.Id === documentId) {
@@ -176,6 +214,31 @@ const Documents = () => {
     }
 
     const addNewDocument = () => {
+        // Reset error states
+        setDocumentError({ title: false, url: false, category: false });
+        setDocumentErrorMessage({ title: "", url: "", category: "" });
+    
+        // Validation
+        let hasError = false;
+    
+        if (!newTitle) {
+            setDocumentErrorMessage(prev => ({ ...prev, title: "This field is required" }));
+            setDocumentError(prev => ({ ...prev, title: true }));
+            hasError = true;
+        }
+        if (!newURL) {
+            setDocumentErrorMessage(prev => ({ ...prev, url: "This field is required" }));
+            setDocumentError(prev => ({ ...prev, url: true }));
+            hasError = true;
+        }
+        if (!newCategory) {
+            setDocumentErrorMessage(prev => ({ ...prev, category: "This field is required" }));
+            setDocumentError(prev => ({ ...prev, category: true }));
+            hasError = true;
+        }
+    
+        if (hasError) return; // Stop execution if there are errors
+    
         const newDocument = {
             Id: documents.length + 1,
             DocumentName: newTitle,
@@ -185,12 +248,15 @@ const Documents = () => {
             LastEdited: new Date(),
             Status: Status.Draft
         };
-
+    
         // Update the documents state
         setDocuments([...documents, newDocument]);
+        setNewTitle("");
+        setNewURL("");
+        setNewCategory("");
         closeDialog();
         alert("Created Successfully");
-    }
+    };
 
     const changeDocumentStatus = (id: number) => {
         setDocuments(prevDocuments => 
@@ -244,10 +310,19 @@ const Documents = () => {
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
                     <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Document Management</h1>
-                    <p style={{ color: "gray" }}>Manage and track ship sale closing tasks</p>
+                    <p style={{ color: "gray" }}>Manage and track documents for ship sale closing</p>
                 </Box>
                 <Box display="flex" gap={1}>
-                    <Button variant="contained" onClick={openAddDocumentDialog} sx={{ mb: 2, width: 200, backgroundColor:"black"}}>Add Document</Button>
+                    <Button 
+                    variant="contained" 
+                    onClick={openAddDocumentDialog} 
+                    sx={{ 
+                        mb: 2, 
+                        width: 200, 
+                        backgroundColor:"black",
+                        "&:hover": {backgroundColor:"darkorange", color:"black"} }}>
+                        Add Document
+                    </Button>
                 </Box>
             </Box>
             <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -365,41 +440,70 @@ const Documents = () => {
             <Dialog open={isAddDialogOpen} onClose={closeDialog} fullWidth>
                 <DialogTitle sx={{fontWeight: 'Bold'}}>Add New Document</DialogTitle>
                 <DialogContent>
+                    <TableContainer>
+                        <Table>
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>Title</Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <TextField
+                                            autoFocus
+                                            margin="dense"
+                                            type="text"
+                                            fullWidth
+                                            variant="outlined"
+                                            value={newTitle}
+                                            onChange={(e) => setNewTitle(e.target.value)}
+                                            error={documentError.title}
+                                            helperText={documentErrorMessage.title}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>URL</Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <TextField
+                                            autoFocus
+                                            margin="dense"
+                                            type="url"
+                                            fullWidth
+                                            variant="outlined"
+                                            value={newURL}
+                                            onChange={(e) => setNewURL(e.target.value)}
+                                            error={documentError.url}
+                                            helperText={documentErrorMessage.url}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>Category</Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Box>
+                                            {documentErrorMessage.category && <Typography color="error">{documentErrorMessage.category}</Typography>}
+                                            <Select
+                                                value={newCategory || ""}
+                                                displayEmpty
+                                                onChange={(e) => setNewCategory(e.target.value)}
+                                                sx={{ height: 30, width: 160, minWidth: 160, borderColor: "lightGrey" }}
+                                                fullWidth
+                                                error = {documentError.category}
+                                            >
+                                                <MenuItem value="" disabled></MenuItem>
+                                                <MenuItem value="Legal">Legal</MenuItem>
+                                                <MenuItem value="Technical">Technical</MenuItem>
+                                                <MenuItem value="HR">HR</MenuItem>
+                                                <MenuItem value="Insurance">Insurance</MenuItem>
+                                                <MenuItem value="Compliance">Compliance</MenuItem>
+                                            </Select>
+                                        </Box>
+                                    </TableCell>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                     <Box>
-                        <Typography variant="body1" fontWeight="bold">Title</Typography>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            type="text"
-                            fullWidth
-                            variant="outlined"
-                            value={newTitle}
-                            onChange={(e) => setNewTitle(e.target.value)}
-                        />
-                    </Box>
-                    <Box>
-                        <Typography variant="body1" fontWeight="bold">URL</Typography>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            type="text"
-                            fullWidth
-                            variant="outlined"
-                            value={newURL}
-                            onChange={(e) => setNewURL(e.target.value)}
-                        />
-                    </Box>
-                    <Box>
-                        <Typography variant="body1" fontWeight="bold">Category</Typography>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            type="text"
-                            fullWidth
-                            variant="outlined"
-                            value={newCategory}
-                            onChange={(e) => setNewCategory(e.target.value)}
-                        />
+                        
                     </Box>
                 </DialogContent>
                 <DialogActions>
@@ -437,32 +541,49 @@ const Documents = () => {
                     </Box>
                 </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="body1" fontWeight="bold">Recipient:</Typography>
-                        <Select
-                            sx={{ alignItems: "center" }}
-                            fullWidth
-                            value={userId}
-                            onChange={(e) => setUserId(Number(e.target.value))} 
-                            required
-                        >
-                            {users.map((user) => (
-                                <MenuItem key={user.Id} value={user.Id}>{user.Name}</MenuItem>
-                            ))}
-                        </Select>
-                    </Box>
-                    <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column' }}>                    
-                        <Typography variant="body1" fontWeight="bold">Action:</Typography>
-                        <Select
-                            value={authorize}
-                            sx={{alignItems:"center"}}
-                            defaultValue={"Needs to Sign"}
-                            onChange={(e) => setAuthorize(e.target.value)}
-                            required>
-                                <MenuItem key="Sign" value="Needs to Sign">Needs to Sign</MenuItem>
-                                <MenuItem key="View" value="Needs to View">Needs to View</MenuItem>
-                        </Select>
-                    </Box>
+                    <TableContainer>
+                        <Table>
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>Recipient:</Typography></TableCell>
+                                    <TableCell>
+                                        <Box>
+                                            {shareDocumentErrorMessage.recipient && <Typography color="error">{shareDocumentErrorMessage.recipient}</Typography>}
+                                            <Select
+                                            sx={{alignItems:"flex-start", width: 250}}
+                                            fullWidth
+                                            value={userId}
+                                            onChange={(e) => setUserId(Number(e.target.value))} 
+                                            error={shareDocumentError.recipient}
+                                            >
+                                                <MenuItem value="0"></MenuItem>
+                                                {users.map((user) => (
+                                                    <MenuItem key={user.Id} value={user.Id}>{user.Name}</MenuItem>
+                                                ))}
+                                            </Select>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>Action:</Typography></TableCell>
+                                    <TableCell>
+                                        <Box>
+                                            {shareDocumentErrorMessage.action && <Typography color="error">{shareDocumentErrorMessage.action}</Typography>}
+                                            <Select
+                                                value={authorize}
+                                                sx={{alignItems:"flex-start", width: 250}}
+                                                defaultValue={"Needs to Sign"}
+                                                onChange={(e) => setAuthorize(e.target.value)}
+                                                error={shareDocumentError.action}>
+                                                    <MenuItem key="Sign" value="Needs to Sign">Needs to Sign</MenuItem>
+                                                    <MenuItem key="View" value="Needs to View">Needs to View</MenuItem>
+                                            </Select>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                     <Button onClick={addShareRecipient} sx={{bgcolor:"#000000", color: "#FFFFFF"}} fullWidth>
                         Add Recipient
                     </Button>
