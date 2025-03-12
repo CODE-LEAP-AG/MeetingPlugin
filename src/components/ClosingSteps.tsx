@@ -105,40 +105,32 @@ const ClosingSteps = () => {
 
     const handleAddTask = (stepNumber: number, index: number) => {
         const taskId = selectedTask[index];
-        
         if (taskId !== null) {
             const taskToAdd = initialTasks.find(task => task.taskId === taskId);
-            
             if (taskToAdd) {
                 setSteps(prevSteps => {
                     return prevSteps.map(step => {
-                        // Check if we're updating the correct step
                         if (step.stepNumber === stepNumber) {
-                            // Create a new updated task object with the selected task
                             const updatedTask = { 
                                 taskId: taskToAdd.taskId, 
                                 taskDescription: taskToAdd.taskDescription, 
                                 status: taskToAdd.status 
                             };
                             
-                            // Add the new task to the existing tasks
                             const updatedTasks = [...step.tasks, updatedTask];
                             
-                            // Return the updated step, including an updated status
                             return {
                                 ...step,
                                 tasks: updatedTasks,
-                                status: updateStepStatus({ ...step, tasks: updatedTasks }) // Update status
+                                status: updateStepStatus({ ...step, tasks: updatedTasks }) 
                             };
                         }
-                        return step; // Return unaltered step for other steps
+                        return step; 
                     });
                 });
-    
-                // Reset the selected task in the state
                 setSelectedTask(prev => {
                     const newSelected = [...prev];
-                    newSelected[index] = null; // Reset the selected task for this index
+                    newSelected[index] = null;
                     return newSelected;
                 });
             }
