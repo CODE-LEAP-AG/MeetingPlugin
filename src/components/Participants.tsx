@@ -74,7 +74,7 @@ const Participants = () => {
         setError({name:false});
         setErrorMessage({name:""});
         let hasError = false;
-        if(!newName){
+        if(!newName.trim()){
             setErrorMessage(prev => ({ ...prev, name: "This field is required" }));
             setError(prev => ({ ...prev, name: true }));
             hasError = true;
@@ -162,7 +162,7 @@ const Participants = () => {
         <Card sx={{ p: 3, m: 2 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
-                    <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Role & Participant Management</h1>
+                    <h1 style={{ fontWeight: "bold" }}>Role & Participant Management</h1>
                 </Box>
                 <Button 
                 variant="contained" 
@@ -171,7 +171,7 @@ const Participants = () => {
                     mb: 2, 
                     width: 200, 
                     backgroundColor:"black", 
-                    "&:hover": {backgroundColor:"darkorange", color:"black"} }}>
+                    '&:hover': {backgroundColor: 'darkgray' }}}>
                     Add Participant
                 </Button>
 

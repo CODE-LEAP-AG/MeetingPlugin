@@ -72,6 +72,7 @@ const Task = () => {
         newTask: {
             name: "",
             type: "",
+            inputType: "",
             document: "",
         },
         sharedTask: {
@@ -85,11 +86,13 @@ const Task = () => {
     const [addTaskError, setAddTaskError] = useState({
         title: false,
         type: false,
+        inputType:false,
         documentName: false
     });
     const [addTaskErrorMessage, setAddTaskErrorMessage] = useState({
         title: "",
         type: "",
+        inputType:"",
         documentName: ""
     });
 
@@ -129,6 +132,7 @@ const Task = () => {
             newTask: {
                 name: "",
                 type: "",
+                inputType: "",
                 document: "",
             },
             sharedTask: {
@@ -143,23 +147,33 @@ const Task = () => {
 
     const addNewTask = () => {
         // Reset error states
-        setAddTaskError({ title: false, type: false, documentName: false});
-        setAddTaskErrorMessage({title: "", type: "", documentName: "" });
+        setAddTaskError({ title: false, type: false, documentName: false, inputType:false});
+        setAddTaskErrorMessage({title: "", type: "", documentName: "", inputType:""});
 
         // Validation
         let hasError = false;
 
-        if (!dialogState.newTask.name) {
+        if (!dialogState.newTask.name.trim()) {
             setAddTaskErrorMessage(prev => ({ ...prev, title: "This field is required" }));
             setAddTaskError(prev => ({ ...prev, title: true }));
             hasError = true;
         }
-        if (!dialogState.newTask.type) {
+        if (!dialogState.newTask.type.trim()) {
             setAddTaskErrorMessage(prev => ({ ...prev, type: "This field is required" }));
             setAddTaskError(prev => ({ ...prev, type: true }));
             hasError = true;
         }
-        if (!dialogState.newTask.document) {
+        if (dialogState.newTask.type == "Value Input" && !dialogState.newTask.inputType.trim()){
+            setAddTaskErrorMessage(prev => ({ ...prev, inputType: "This field is required" }));
+            setAddTaskError(prev => ({ ...prev, inputType: true }));
+            hasError = true;
+        }
+        if (!dialogState.newTask.document.trim()) {
+            setAddTaskErrorMessage(prev => ({ ...prev, documentName: "This field is required" }));
+            setAddTaskError(prev => ({ ...prev, documentName: true }));
+            hasError = true;
+        }
+        if (!dialogState.newTask.document.trim()) {
             setAddTaskErrorMessage(prev => ({ ...prev, documentName: "This field is required" }));
             setAddTaskError(prev => ({ ...prev, documentName: true }));
             hasError = true;
@@ -171,7 +185,7 @@ const Task = () => {
             id: tasks.length + 1,
             name: dialogState.newTask.name,
             type: dialogState.newTask.type,
-            inputType: dialogState.newTask.type === "Confirmation" ? "checkbox" : "text",
+            inputType: dialogState.newTask.type === "Value Input"? dialogState.newTask.inputType : "checkbox",
             value: "",
             assignee: "",
             status: Status.Pending,
@@ -211,8 +225,8 @@ const Task = () => {
         <Card sx={{ p: 3, m: 2 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
-                    <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Task Management</h1>
-                    <p style={{ color: "gray" }}>Manage and track ship sale closing tasks</p>
+                    <h1 style={{ fontWeight: "bold" }}>Task Management</h1>
+                    <h4 style={{ color: "gray", fontWeight:"normal" }}>Manage and track ship sale closing tasks</h4>
                 </Box>
                 <Button 
                     variant="contained" 
@@ -220,8 +234,7 @@ const Task = () => {
                     sx={{ 
                         mb: 2, 
                         width: 200, 
-                        backgroundColor: "black", 
-                        "&:hover": { backgroundColor:"darkorange", color:"black"} }}>
+                        backgroundColor: "black", '&:hover': { backgroundColor: 'darkgray' }}}>
                         Add Task
                 </Button>
             </Box>
@@ -247,19 +260,12 @@ const Task = () => {
                                 <TableCell sx={{ maxWidth: 30 }}>{task.name}</TableCell>
                                 <TableCell sx={{ maxWidth: 30 }}>{task.type}</TableCell>
                                 <TableCell sx={{ maxWidth: 50 }}>
-                                    {task.type === "Confirmation" ? (
-                                        <Checkbox
-                                            checked={Boolean(task.value)}
-                                            onChange={(e) => handleInputChange(task.id, e.target.checked)}
-                                        />
-                                    ) : (
                                         <input
                                             type={task.inputType}
                                             style={{ border: "1px solid lightgray", padding: "4px", borderRadius: "4px", maxWidth: "7rem" }}
                                             value={task.value}
                                             onChange={(e) => handleInputChange(task.id, e.target.value)}
                                         />
-                                    )}
                                 </TableCell>
                                 <TableCell sx={{ maxWidth: 120 }}>
                                     <Select
@@ -341,13 +347,13 @@ const Task = () => {
             </TableContainer>
 
             <Dialog open={dialogState.isOpen} onClose={closeDialog} fullWidth>
-                <DialogTitle sx={{ fontWeight: 'bold' }}>Add New Task</DialogTitle>
+                <DialogTitle sx={{ fontSize: 30, fontWeight: 'bold' }}>Add New Task</DialogTitle>
                 <DialogContent>
                     <TableContainer>
                         <Table>
                             <TableBody>
                                 <TableRow>
-                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>Title</Typography></TableCell>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end", fontSize:20}}>Title</Typography></TableCell>
                                     <TableCell>
                                         <TextField
                                             autoFocus
@@ -363,7 +369,7 @@ const Task = () => {
                                     </TableCell>
                                 </TableRow>
                                 <TableRow>
-                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>Type</Typography></TableCell>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end", fontSize:20}}>Type</Typography></TableCell>
                                     <TableCell>
                                         <Box>
                                             {addTaskErrorMessage.type && <Typography color="error">{addTaskErrorMessage.type}</Typography>}
@@ -381,8 +387,29 @@ const Task = () => {
                                         </Box>
                                     </TableCell>
                                 </TableRow>
+                                {dialogState.newTask.type === "Value Input" ? 
                                 <TableRow>
-                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end"}}>Document Name</Typography> </TableCell>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end", fontSize:20}}>Field Type</Typography></TableCell>
+                                    <TableCell>
+                                        <Box>
+                                            {addTaskErrorMessage.inputType && <Typography color="error">{addTaskErrorMessage.inputType}</Typography>}
+                                            <Select
+                                            value={dialogState.newTask.inputType}
+                                            onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, inputType: e.target.value } }))}
+                                            fullWidth
+                                            variant="outlined"
+                                            error={addTaskError.type}
+                                            >
+                                                <MenuItem value="Number">Number</MenuItem>
+                                                <MenuItem value="Checkbox">Checkbox</MenuItem>
+                                                <MenuItem value="Date">Date</MenuItem>
+                                                <MenuItem value="Text">Text</MenuItem>
+                                            </Select>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow> : ""}
+                                <TableRow>
+                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end", fontSize:20}}>Document Name</Typography> </TableCell>
                                     <TableCell>
                                         <Box>
                                             {addTaskErrorMessage.documentName && <Typography color="error">{addTaskErrorMessage.documentName}</Typography>}

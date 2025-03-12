@@ -186,8 +186,7 @@ const ClosingMeetings = () => {
         <Card sx={{ p: 3, m: 2 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
-                    <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>&nbsp; Closing Meeting</h1>
-
+                    <h1 style={{fontWeight: "bold" }}>&nbsp; Closing Meeting</h1>
                 </Box>
                 <Button 
                     variant="contained" 
@@ -195,7 +194,8 @@ const ClosingMeetings = () => {
                     sx={{ 
                         mb: 2, 
                         width: 200, 
-                        backgroundColor: isRecording ? "Red" : "Black",
+                        backgroundColor: isRecording ? "Red" : "Black", 
+                        '&:hover': !isRecording ? { backgroundColor: 'darkgray' } : { backgroundColor: 'maroon' } 
                         }}>
                         {isRecording ? "Stop Recording" : "Start Recording"}
                 </Button>
