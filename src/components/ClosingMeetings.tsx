@@ -14,23 +14,41 @@ import {
     DialogContent, 
     DialogActions, 
     TextField,
-    Tooltip
+    Tooltip,
+    Typography
 } from "@mui/material";
 import {
     Delete as DeleteIcon,
     Visibility as VisibilityIcon,
     Mic as MicIcon,
-    Description as DescriptionIcon
+    Description as DescriptionIcon,
+    Close as CloseIcon
 } from "@mui/icons-material";
 
-const initialecordings = [
+interface Recording {
+    id: number;
+    recordingName: string;
+    date: Date;
+    transcripted : boolean;
+    transcript: string
+}
+
+const initialecordings: Recording[] = [
     {id: 1, recordingName: "Closing Meeting 1", date: new Date("2024-01-01 10:00"), transcripted: false, transcript:""},
     {id: 2, recordingName: "Closing Meeting 2", date: new Date("2024-06-15 14:00"), transcripted: false, transcript:"This is the transcript <br/>"},
     {id: 3, recordingName: "Closing Meeting 3", date: new Date("2024-09-30 23:00"), transcripted: false, transcript:""},
 ]
 
 const ClosingMeetings = () => {
-    const [recordings, setRecordings] = useState(initialecordings);
+    const [recordings, setRecordings] = useState<Recording[]>(initialecordings);
+    const [recording, setRecording] = useState<Recording>({
+        id: 0,
+        recordingName: "",
+        date: new Date(),
+        transcripted: false,
+        transcript: ""
+    });
+    const [isRecordingDialogOpen, setIsRecordingDialogOpen] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [isEditing, setIsEditing] = useState(null);
     const [editedName, setEditedName] = useState('');
@@ -133,11 +151,35 @@ const ClosingMeetings = () => {
         closeDialog();
     }
 
+    const openRecordingDialog = (id: number) => {
+        setRecording({
+            id: 0,
+            recordingName: "",
+            date: new Date(),
+            transcripted: false,
+            transcript: ""
+        });
+        var record = recordings.find((record) => record.id === id);
+        if(record){
+            setRecording({
+                id: id,
+                recordingName: record.recordingName,
+                date: record.date,
+                transcripted: record.transcripted,
+                transcript: record.transcript
+            });
+            setIsRecordingDialogOpen(true);
+            return;
+        }
+        alert("Something's wrong, please try again");
+    }
+
     const openDialog = () => {
         setIsDialogOpen(true);
     }
     const closeDialog = () => {
         setIsDialogOpen(false);
+        setIsRecordingDialogOpen(false);
     }
 
     return (
@@ -198,7 +240,8 @@ const ClosingMeetings = () => {
                                             <Button
                                             variant="text"
                                             sx={{}}
-                                            color="inherit">
+                                            color="inherit"
+                                            onClick={() => openRecordingDialog(recording.id)}>
                                             <VisibilityIcon />
                                             </Button>
                                         </Tooltip>
@@ -231,6 +274,26 @@ const ClosingMeetings = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Dialog open={isRecordingDialogOpen} onClose={closeDialog} fullWidth>
+                <DialogTitle>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="h6" sx={{fontWeight: 'Bold'}}>Record of {recording.recordingName}</Typography>
+                        <Button onClick={closeDialog} color="inherit">
+                            <CloseIcon />
+                        </Button>
+                    </Box>
+                </DialogTitle>
+                <DialogContent>
+                <DialogContent dividers style={{ textAlign: 'center', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
+                    <Typography variant="h6" style={{ fontWeight: 'normal' }}>
+                        Preview of  {recording.recordingName}
+                    </Typography>
+                    <Box position="absolute" style={{ opacity: 0.1, fontSize: '4rem', color: 'gray' }}>
+                        RECORDING HERE
+                    </Box>
+                    </DialogContent>
+                </DialogContent>
+            </Dialog>
             <Dialog open={isDialogOpen} onClose={closeDialog} fullWidth>
                 <DialogTitle sx={{fontWeight: 'Bold'}}>{dialogTitle}</DialogTitle>
                 <DialogContent>
