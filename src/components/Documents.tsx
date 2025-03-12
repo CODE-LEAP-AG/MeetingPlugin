@@ -221,17 +221,17 @@ const Documents = () => {
         // Validation
         let hasError = false;
     
-        if (!newTitle) {
+        if (!newTitle.trim()) {
             setDocumentErrorMessage(prev => ({ ...prev, title: "This field is required" }));
             setDocumentError(prev => ({ ...prev, title: true }));
             hasError = true;
         }
-        if (!newURL) {
+        if (!newURL.trim()) {
             setDocumentErrorMessage(prev => ({ ...prev, url: "This field is required" }));
             setDocumentError(prev => ({ ...prev, url: true }));
             hasError = true;
         }
-        if (!newCategory) {
+        if (!newCategory.trim()) {
             setDocumentErrorMessage(prev => ({ ...prev, category: "This field is required" }));
             setDocumentError(prev => ({ ...prev, category: true }));
             hasError = true;
@@ -309,7 +309,7 @@ const Documents = () => {
         <Card sx={{ p: 3, m: 2 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Box>
-                    <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Document Management</h1>
+                    <h1 style={{ fontWeight: "bold" }}>Document Management</h1>
                     <p style={{ color: "gray" }}>Manage and track documents for ship sale closing</p>
                 </Box>
                 <Box display="flex" gap={1}>
@@ -319,8 +319,8 @@ const Documents = () => {
                     sx={{ 
                         mb: 2, 
                         width: 200, 
-                        backgroundColor:"black",
-                        "&:hover": {backgroundColor:"darkorange", color:"black"} }}>
+                        backgroundColor:"black", 
+                        '&:hover': { backgroundColor: 'darkgray' }}}>
                         Add Document
                     </Button>
                 </Box>
@@ -584,7 +584,7 @@ const Documents = () => {
                             </TableBody>
                         </Table>
                     </TableContainer>
-                    <Button onClick={addShareRecipient} sx={{bgcolor:"#000000", color: "#FFFFFF"}} fullWidth>
+                    <Button onClick={addShareRecipient} sx={{bgcolor:"#000000", color: "#FFFFFF", '&:hover': { backgroundColor: 'darkgray' }}} fullWidth>
                         Add Recipient
                     </Button>
                     <Box>

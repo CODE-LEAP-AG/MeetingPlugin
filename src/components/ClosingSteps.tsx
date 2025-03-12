@@ -195,7 +195,7 @@ const ClosingSteps = () => {
             <Card sx={{ p: 3, m: 2 }}>
                 <Box justifyContent="space-between" alignItems="center">
                     <Box>
-                        <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>
+                        <h1 style={{ fontWeight: "bold" }}>
                             Closing Step Management
                         </h1>
                     </Box>
@@ -215,7 +215,7 @@ const ClosingSteps = () => {
                             error={error}
                             helperText={helperText}
                         />
-                        <Button variant="contained" color="primary" onClick={handleAddStep} sx={{ width: 200, height: 50, backgroundColor: "black" }}>
+                        <Button variant="contained" color="primary" onClick={handleAddStep} sx={{ width: 200, height: 50, backgroundColor: "black", fontWeight:"bold", fontSize:17, '&:hover': { backgroundColor: 'darkgray' }}}>
                             Add Step
                         </Button>
                     </Box>
@@ -283,7 +283,7 @@ const ClosingSteps = () => {
                                                             variant="contained" 
                                                             color="primary" 
                                                             onClick={() => handleAddTask(step.stepNumber, index)} 
-                                                            sx={{ width: 150, mt: 2, mb: 2, ml:2,height: 50, backgroundColor: "black" }}
+                                                            sx={{ width: 150, mt: 2, mb: 2, ml:2,height: 50, backgroundColor: "black", fontWeight:"bold", '&:hover': { backgroundColor: 'darkgray' }}}
                                                             disabled={!selectedTask[index]} // Disable button if no task is selected
                                                         >
                                                             <AddIcon /> Add Task

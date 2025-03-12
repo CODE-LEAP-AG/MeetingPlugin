@@ -101,7 +101,7 @@ const ClosingMemo = () => {
         <Card sx={{ p: 3, m: 2 }}>
             <Box justifyContent="space-between" alignItems="center">
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>
+                    <h1 style={{fontWeight: "bold" }}>
                         Closing Memos
                     </h1>
                     <Button 
@@ -111,7 +111,7 @@ const ClosingMemo = () => {
                             mb: 2, 
                             width: 200, 
                             backgroundColor: "black", 
-                            "&:hover": { backgroundColor:"darkorange", color:"black"} }}>
+                            fontWeight:"bold", '&:hover': { backgroundColor: 'darkgray' }}}>
                         <DescriptionIcon />&nbsp;Generate Memo
                     </Button>
                 </Box>
