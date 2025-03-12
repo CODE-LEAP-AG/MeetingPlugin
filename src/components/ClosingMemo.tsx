@@ -24,7 +24,7 @@ import {
 } from '@mui/icons-material';
 import {User, initialUsers} from './Participants';
 import {Task, initialTasks} from './Tasks';
-import {Role, initialDocuments, Document} from './Documents';
+import {initialDocuments, Document} from './Documents';
 import {Step, initialSteps} from './ClosingSteps';
 
 interface Memo {
