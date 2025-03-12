@@ -38,12 +38,12 @@ enum Status {
     Released= "Released", 
 }
 
-interface Role{
+export interface Role{
     UserId: number,
     Authorize: string,
 }
 
-interface Document {
+export interface Document {
     Id: number;
     DocumentName: string;
     Category: string;
@@ -53,7 +53,7 @@ interface Document {
     Status: Status;
 }
 
-const initialDocuments: Document[] = [
+export const initialDocuments: Document[] = [
     {Id: 1,DocumentName:"Purchase Agreement", Category:"Legal", SharedWith:[{UserId:1,Authorize:"Needs to Sign"},{UserId:2,Authorize:"Needs to View"}],CreationDate: new Date("2023-06-01 10:00"), LastEdited: new Date("2023-06-05 10:00"), Status: Status.Approved},
     {Id: 2,DocumentName:"Non-Disclosure Agreement", Category:"Legal", SharedWith:[{UserId:3,Authorize:"Needs to Sign"}],CreationDate: new Date("2023-05-15 10:00"), LastEdited: new Date("2023-06-02 10:00"), Status: Status.Approved},
     {Id: 3,DocumentName:"Vessel Inspection Report", Category:"Technical", SharedWith:[{UserId:4,Authorize:"Needs to View"},{UserId:5,Authorize:"Needs to Sign"}],CreationDate: new Date("2023-05-20 10:00"), LastEdited: new Date("2023-06-10 10:00"), Status: Status.Released},
