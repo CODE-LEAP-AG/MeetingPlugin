@@ -14,6 +14,7 @@ import {
     Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import ClosingMemo from "./ClosingMemo";
 
 enum Status {
     Pending = "Pending",
@@ -21,16 +22,14 @@ enum Status {
     In_Progress = "In Progress",
 }
 
-interface Step {
+export interface Step {
     stepNumber: number,
     stepDescription: string;
-    tasks: {
-        task: Task;
-    }[];
+    tasks: Task[];
     status: Status;
 }
 
-const initialSteps: Step[] = [
+export const initialSteps: Step[] = [
     { stepNumber: 1, stepDescription: "Initial Due Intelligence", tasks: [], status: Status.Pending },
     { stepNumber: 2, stepDescription: "Contract Negotiation", tasks: [], status: Status.Pending },
     { stepNumber: 3, stepDescription: "Financial Arrangements", tasks: [], status: Status.Pending },
@@ -38,13 +37,13 @@ const initialSteps: Step[] = [
     { stepNumber: 5, stepDescription: "Closing and Transfer of Ownership", tasks: [], status: Status.Pending },
 ];
 
-interface Task {
+export interface Task {
     taskId: number,
     taskDescription: string;
     status: Status;
 }
 
-const initialTasks: Task[] = [
+export const initialTasks: Task[] = [
     { taskId: 1, taskDescription: "Review Purchase Agreement (Purchase Agreement)", status: Status.Pending },
     { taskId: 2, taskDescription: "Verify Bunker Fuel Quantity (Fuel and Cargo Agreement)", status: Status.Complete },
     { taskId: 3, taskDescription: "Confirm Vessel Classification Status (Vessel Classification Certificate)", status: Status.In_Progress },
@@ -112,19 +111,26 @@ const ClosingSteps = () => {
                 setSteps(prevSteps => {
                     return prevSteps.map(step => {
                         if (step.stepNumber === stepNumber) {
-                            const updatedTasks = [...step.tasks, { task: taskToAdd }];
+                            const updatedTask = { 
+                                taskId: taskToAdd.taskId, 
+                                taskDescription: taskToAdd.taskDescription, 
+                                status: taskToAdd.status 
+                            };
+                            
+                            const updatedTasks = [...step.tasks, updatedTask];
+                            
                             return {
                                 ...step,
                                 tasks: updatedTasks,
-                                status: updateStepStatus({ ...step, tasks: updatedTasks }) // Update status
+                                status: updateStepStatus({ ...step, tasks: updatedTasks }) 
                             };
                         }
-                        return step;
+                        return step; 
                     });
                 });
                 setSelectedTask(prev => {
                     const newSelected = [...prev];
-                    newSelected[index] = null; // Reset the selected task for this index
+                    newSelected[index] = null;
                     return newSelected;
                 });
             }
@@ -135,7 +141,7 @@ const ClosingSteps = () => {
         setSteps(prevSteps => {
             return prevSteps.map(step => {
                 if (step.stepNumber === stepNumber) {
-                    const updatedTasks = step.tasks.filter(task => task.task.taskId !== taskId);
+                    const updatedTasks = step.tasks.filter(task => task.taskId !== taskId);
                     return {
                         ...step,
                         tasks: updatedTasks,
@@ -154,9 +160,9 @@ const ClosingSteps = () => {
             return Status.Complete; // No tasks means the step is considered completed
         }
 
-        const allPending = tasks.every(task => task.task.status === Status.Pending);
-        const allCompleted = tasks.every(task => task.task.status === Status.Complete);
-        const anyInProgress = tasks.some(task => task.task.status === Status.In_Progress);
+        const allPending = tasks.every(task => task.status === Status.Pending);
+        const allCompleted = tasks.every(task => task.status === Status.Complete);
+        const anyInProgress = tasks.some(task => task.status === Status.In_Progress);
 
         if (allPending) {
             return Status.Pending;
@@ -185,163 +191,167 @@ const ClosingSteps = () => {
     };
 
     return (
-        <Card sx={{ p: 3, m: 2 }}>
-            <Box justifyContent="space-between" alignItems="center">
-                <Box>
-                    <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>
-                        Closing Step Management
-                    </h1>
+        <Box>
+            <Card sx={{ p: 3, m: 2 }}>
+                <Box justifyContent="space-between" alignItems="center">
+                    <Box>
+                        <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>
+                            Closing Step Management
+                        </h1>
+                    </Box>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mt: 2, mb: 2, minHeight: 100 }}>
+                        <TextField
+                            value={newStepDescription}
+                            onChange={(e) => setNewStepDescription(e.target.value)}
+                            variant="outlined"
+                            fullWidth
+                            placeholder="New Step Description"
+                            sx={{ height: 50, mr:2}}
+                            InputProps={{
+                                style: {
+                                    height: '50px', // Set the height explicitly
+                                },
+                            }}
+                            error={error}
+                            helperText={helperText}
+                        />
+                        <Button variant="contained" color="primary" onClick={handleAddStep} sx={{ width: 200, height: 50, backgroundColor: "black" }}>
+                            Add Step
+                        </Button>
+                    </Box>
                 </Box>
-                <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mt: 2, mb: 2, minHeight: 100 }}>
-                    <TextField
-                        value={newStepDescription}
-                        onChange={(e) => setNewStepDescription(e.target.value)}
-                        variant="outlined"
-                        fullWidth
-                        placeholder="New Step Description"
-                        sx={{ height: 50, mr:2}}
-                        InputProps={{
-                            style: {
-                                height: '50px', // Set the height explicitly
-                            },
-                        }}
-                        error={error}
-                        helperText={helperText}
-                    />
-                    <Button variant="contained" color="primary" onClick={handleAddStep} sx={{ width: 200, height: 50, backgroundColor: "black" }}>
-                        Add Step
-                    </Button>
-                </Box>
-            </Box>
-            <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="steps">
-                    {(provided) => (
-                        <Box ref={provided.innerRef} {...provided.droppableProps}>
-                            {
-                                steps.map((step, index) => (
-                                    <Draggable key={step.stepNumber} draggableId={String(step.stepNumber)} index={index}>
-                                        {(provided) => (
-                                            <Box ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} sx={{ justifyContent: "space-between", backgroundColor: "#DDDDDD", pr: 2, pl: 2 }}>
-                                                <Box sx={{ display: "flex", marginTop: 3, justifyContent : "space-between", alignItems: "flex-end" }}>
-                                                    <h3>Step {step.stepNumber}: {step.stepDescription}</h3>
-                                                    <Box>
-                                                        <Typography
-                                                                component="span"
-                                                                variant="body1"
-                                                                sx={{ 
-                                                                    bgcolor: getStatusColors(step.status || Status.Pending).backgroundColor, 
-                                                                    color: getStatusColors(step.status || Status.Pending).textColor, 
-                                                                    borderRadius: 1,
-                                                                    border:2,
-                                                                    paddingBlock:1,
-                                                                    paddingLeft:2,
-                                                                    paddingRight:2
-                                                                }}
-                                                            >
-                                                                {step.status}
-                                                        </Typography>
-                                                        <Tooltip title="Delete Step" arrow>
-                                                            <Button
-                                                            variant="text"
-                                                            sx={{}}
-                                                            color="inherit"
-                                                            onClick={() => handleDeleteStep(step.stepNumber)}>
-                                                            <DeleteIcon />
-                                                            </Button>
-                                                        </Tooltip>
-                                                    </Box>
-                                                </Box>
-
-                                                <Box sx={{ display: "flex", alignItems: "center" }}>
-                                                    <MenuItem>
-                                                        <Select
-                                                            value={selectedTask[index] || ""}
-                                                            onChange={(e) => setSelectedTask(prev => {
-                                                                const newSelected = [...prev];
-                                                                newSelected[index] = e.target.value ? Number(e.target.value) : null; // Convert to number or null
-                                                                return newSelected;
-                                                            })}
-                                                            sx={{ minWidth: 600}}
-                                                            displayEmpty
-                                                        >
-                                                            <MenuItem value="" disabled>Select a task to add</MenuItem>
-                                                            {initialTasks.filter(task => 
-                                                                !steps[index].tasks.some(stepTask => stepTask.task.taskId === task.taskId) // Exclude already added tasks
-                                                            ).map((task) => (
-                                                                <MenuItem key={task.taskId} value={task.taskId}>{task.taskDescription}</MenuItem>
-                                                            ))}
-                                                        </Select>
-                                                    </MenuItem>
-                                                    <Button 
-                                                        variant="contained" 
-                                                        color="primary" 
-                                                        onClick={() => handleAddTask(step.stepNumber, index)} 
-                                                        sx={{ width: 150, mt: 2, mb: 2, ml:2,height: 50, backgroundColor: "black" }}
-                                                        disabled={!selectedTask[index]} // Disable button if no task is selected
-                                                    >
-                                                        <AddIcon /> Add Task
-                                                    </Button>
-                                                </Box>
-
-                                                <Box sx={{ alignItems: "center", paddingBottom:3  }}>
-                                                    {step.tasks.map((task, taskIndex) => (
-                                                        <Typography 
-                                                            key={task.task.taskId} 
-                                                            sx={{ 
-                                                                display: "flex", 
-                                                                justifyContent: "space-between", 
-                                                                alignItems: "center", // Center align items vertically
-                                                                border: 2, 
-                                                                mt: 2, 
-                                                                height: 50, 
-                                                                borderColor: "lightgrey", 
-                                                                background: "#FFFFFF",
-                                                                padding: '0 8px', // Optional: Add some padding for better spacing
-                                                            }}
-                                                        >
-                                                            <span><span style={{fontWeight:"bold"}}>{taskIndex + 1}.</span> {task.task.taskDescription}</span>
-                                                            
-                                                            <Box sx={{ display: "flex", alignItems: "center" }}> {/* Center align items in this box as well */}
-                                                                <Typography
+                <DragDropContext onDragEnd={handleDragEnd}>
+                    <Droppable droppableId="steps">
+                        {(provided: any) => (
+                            <Box ref={provided.innerRef} {...provided.droppableProps}>
+                                {
+                                    steps.map((step, index) => (
+                                        <Draggable key={step.stepNumber} draggableId={String(step.stepNumber)} index={index}>
+                                            {(provided: any) => (
+                                                <Box ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} sx={{ justifyContent: "space-between", backgroundColor: "#DDDDDD", pr: 2, pl: 2 }}>
+                                                    <Box sx={{ display: "flex", marginTop: 3, justifyContent : "space-between", alignItems: "flex-end" }}>
+                                                        <h3>Step {step.stepNumber}: {step.stepDescription}</h3>
+                                                        <Box>
+                                                            <Typography
                                                                     component="span"
                                                                     variant="body1"
                                                                     sx={{ 
-                                                                        bgcolor: getStatusColors(task.task.status || Status.Pending).backgroundColor, 
-                                                                        color: getStatusColors(task.task.status || Status.Pending).textColor, 
-                                                                        borderRadius: 4,
-                                                                        mr: 2,
-                                                                        paddingBlock:0.5,
-                                                                        paddingLeft:1,
-                                                                        paddingRight:1,
-                                                                        fontSize:"14px",
-                                                                        fontWeight:"bold"
+                                                                        bgcolor: getStatusColors(step.status || Status.Pending).backgroundColor, 
+                                                                        color: getStatusColors(step.status || Status.Pending).textColor, 
+                                                                        borderRadius: 1,
+                                                                        border:2,
+                                                                        paddingBlock:1,
+                                                                        paddingLeft:2,
+                                                                        paddingRight:2
                                                                     }}
                                                                 >
-                                                                    {task.task.status}
-                                                                </Typography>
-                                                                <Tooltip title="Delete Task">
-                                                                    <IconButton 
-                                                                        sx={{color:"#999999"}}
-                                                                        onClick={() => handleDeleteTask(step.stepNumber, task.task.taskId)}
+                                                                    {step.status}
+                                                            </Typography>
+                                                            <Tooltip title="Delete Step" arrow>
+                                                                <Button
+                                                                variant="text"
+                                                                sx={{}}
+                                                                color="inherit"
+                                                                onClick={() => handleDeleteStep(step.stepNumber)}>
+                                                                <DeleteIcon />
+                                                                </Button>
+                                                            </Tooltip>
+                                                        </Box>
+                                                    </Box>
+
+                                                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                                                        <MenuItem>
+                                                            <Select
+                                                                value={selectedTask[index] || ""}
+                                                                onChange={(e) => setSelectedTask(prev => {
+                                                                    const newSelected = [...prev];
+                                                                    newSelected[index] = e.target.value ? Number(e.target.value) : null; // Convert to number or null
+                                                                    return newSelected;
+                                                                })}
+                                                                sx={{ minWidth: 600}}
+                                                                displayEmpty
+                                                            >
+                                                                <MenuItem value="" disabled>Select a task to add</MenuItem>
+                                                                {initialTasks.filter(task => 
+                                                                    !steps[index].tasks.some(stepTask => stepTask.taskId === task.taskId) // Exclude already added tasks
+                                                                ).map((task) => (
+                                                                    <MenuItem key={task.taskId} value={task.taskId}>{task.taskDescription}</MenuItem>
+                                                                ))}
+                                                            </Select>
+                                                        </MenuItem>
+                                                        <Button 
+                                                            variant="contained" 
+                                                            color="primary" 
+                                                            onClick={() => handleAddTask(step.stepNumber, index)} 
+                                                            sx={{ width: 150, mt: 2, mb: 2, ml:2,height: 50, backgroundColor: "black" }}
+                                                            disabled={!selectedTask[index]} // Disable button if no task is selected
+                                                        >
+                                                            <AddIcon /> Add Task
+                                                        </Button>
+                                                    </Box>
+
+                                                    <Box sx={{ alignItems: "center", paddingBottom:3  }}>
+                                                        {step.tasks.map((task, taskIndex) => (
+                                                            <Typography 
+                                                                key={task.taskId} 
+                                                                sx={{ 
+                                                                    display: "flex", 
+                                                                    justifyContent: "space-between", 
+                                                                    alignItems: "center", // Center align items vertically
+                                                                    border: 2, 
+                                                                    mt: 2, 
+                                                                    height: 50, 
+                                                                    borderColor: "lightgrey", 
+                                                                    background: "#FFFFFF",
+                                                                    padding: '0 8px', // Optional: Add some padding for better spacing
+                                                                }}
+                                                            >
+                                                                <span><span style={{fontWeight:"bold"}}>{taskIndex + 1}.</span> {task.taskDescription}</span>
+                                                                
+                                                                <Box sx={{ display: "flex", alignItems: "center" }}> {/* Center align items in this box as well */}
+                                                                    <Typography
+                                                                        component="span"
+                                                                        variant="body1"
+                                                                        sx={{ 
+                                                                            bgcolor: getStatusColors(task.status || Status.Pending).backgroundColor, 
+                                                                            color: getStatusColors(task.status || Status.Pending).textColor, 
+                                                                            borderRadius: 4,
+                                                                            mr: 2,
+                                                                            paddingBlock:0.5,
+                                                                            paddingLeft:1,
+                                                                            paddingRight:1,
+                                                                            fontSize:"14px",
+                                                                            fontWeight:"bold"
+                                                                        }}
                                                                     >
-                                                                        <DeleteIcon />
-                                                                    </IconButton>
-                                                                </Tooltip>
-                                                            </Box>
-                                                        </Typography>
-                                                    ))}
+                                                                        {task.status}
+                                                                    </Typography>
+                                                                    <Tooltip title="Delete Task">
+                                                                        <IconButton 
+                                                                            sx={{color:"#999999"}}
+                                                                            onClick={() => handleDeleteTask(step.stepNumber, task.taskId)}
+                                                                        >
+                                                                            <DeleteIcon />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                </Box>
+                                                            </Typography>
+                                                        ))}
+                                                    </Box>
                                                 </Box>
-                                            </Box>
-                                        )}
-                                    </Draggable>
-                                ))
-                            }
-                            {provided.placeholder}
-                        </Box>
-                    )}
-                </Droppable>
-            </DragDropContext>
-        </Card>
+                                            )}
+                                        </Draggable>
+                                    ))
+                                }
+                                {provided.placeholder}
+                            </Box>
+                        )}
+                    </Droppable>
+                </DragDropContext>
+            </Card>
+            <ClosingMemo />
+        </Box>
+       
     );
 }
 

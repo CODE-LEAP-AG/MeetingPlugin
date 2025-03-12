@@ -32,7 +32,7 @@ enum Status {
     Complete = "Complete"
 }
 
-interface Task {
+export interface Task {
     id: number;
     name: string;
     type: string;
@@ -43,7 +43,7 @@ interface Task {
     document: string;
 }
 
-const initialTasks: Task[] = [
+export const initialTasks: Task[] = [
     { id: 1, name: "Bunker Fuel Quantity (MT)", type: "Value Input", inputType: "number", value: "500", assignee: "", status: Status.Pending, document: "Fuel and Cargo Agreement" },
     { id: 2, name: "Sale Includes Bunkers & Cargo?", type: "Confirmation", inputType: "checkbox", value: false, assignee: "", status: Status.Pending, document: "Fuel and Cargo Agreement" },
     { id: 3, name: "Last Dry Dock Inspection Date", type: "Value Input", inputType: "date", value: "", assignee: "", status: Status.Pending, document: "Technical Inspection Report" },
@@ -51,7 +51,7 @@ const initialTasks: Task[] = [
     { id: 5, name: "Outstanding Crew Wages (USD)", type: "Value Input", inputType: "number", value: "", assignee: "", status: Status.Pending, document: "Financial Statement" },
 ];
 
-const documents = [
+export const documents = [
     "Fuel and Cargo Agreement",
     "Technical Inspection Report",
     "Vessel Classification Certificate",

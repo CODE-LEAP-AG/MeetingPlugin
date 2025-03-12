@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Card, Box } from "@mui/material";
 import {
+    Card,Box,
     Table,
     TableHead,
     TableBody,
@@ -20,20 +20,20 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-interface User {
+export interface User {
     id: number;
     name: string;
     role: string;
     permission: Permission[];
 }
 
-enum Permission {
+export enum Permission {
     APPROVE = "Approve",
     SIGN = "Sign",
     RELEASE = "Release"
 }
 
-const initialUser: User[] = [
+export const initialUsers: User[] = [
     {id: 1, name: "John Doe", role:"", permission: [Permission.APPROVE, Permission.SIGN, Permission.RELEASE] },
     {id: 2, name: "Jane Smith", role:"", permission: [Permission.APPROVE, Permission.SIGN] },
     {id: 3, name: "Mike Johnson", role:"", permission: [Permission.APPROVE, Permission.SIGN] },
@@ -58,7 +58,7 @@ const roles = [
 ];
 
 const Participants = () => {
-    const [participants, setParticipants] = useState(initialUser );
+    const [participants, setParticipants] = useState(initialUsers);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [newName, setNewName] = useState("");
     const [selectedRole, setSelectedRole] = useState("");

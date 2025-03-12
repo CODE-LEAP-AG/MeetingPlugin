@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { TabList, Tab, makeStyles, shorthands, tokens } from "@fluentui/react-components";
 import Dashboard from "./Dashboard";
-import Agenda from "./Agendas";
 import ClosingStep from "./ClosingSteps";
 import Task from "./Tasks";
 import Document from "./Documents";
@@ -44,9 +43,9 @@ const MeetingTab = () => {
       <TabList selectedValue={selectedTab} onTabSelect={(_, data) => setSelectedTab(data.value as any)}>
         <Tab value="dashboard">Dashboard</Tab>
         <Tab value="closingsteps">Closing Step</Tab>
-        <Tab value="closingMeeting">Closing Meeting</Tab>
         <Tab value="tasks">Tasks</Tab>
         <Tab value="documents">Documents</Tab>
+        <Tab value="closingMeeting">Closing Meeting</Tab>
         <Tab value="participants">Participants</Tab>
       </TabList>
 
@@ -54,9 +53,9 @@ const MeetingTab = () => {
       <div className={styles.tabContent}>
         {selectedTab === "dashboard" && <Dashboard />}
         {selectedTab === "closingsteps" && <ClosingStep />}
-        {selectedTab === "closingMeeting" && <ClosingMeeting />}
         {selectedTab === "tasks" && <Task />}
         {selectedTab === "documents" && <Document />}
+        {selectedTab === "closingMeeting" && <ClosingMeeting />}
         {selectedTab === "participants" && <Participant />}
       </div>
     </div>
