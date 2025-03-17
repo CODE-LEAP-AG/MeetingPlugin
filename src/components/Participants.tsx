@@ -23,8 +23,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 export interface User {
     id: number;
     name: string;
+    shortName: string;
     role: string;
     permission: Permission[];
+    backgroundColor: string;
 }
 
 export enum Permission {
@@ -34,14 +36,14 @@ export enum Permission {
 }
 
 export const initialUsers: User[] = [
-    {id: 1, name: "John Doe", role:"", permission: [Permission.APPROVE, Permission.SIGN, Permission.RELEASE] },
-    {id: 2, name: "Jane Smith", role:"", permission: [Permission.APPROVE, Permission.SIGN] },
-    {id: 3, name: "Mike Johnson", role:"", permission: [Permission.APPROVE, Permission.SIGN] },
-    {id: 4, name: "Sarah Lee", role:"", permission: [Permission.APPROVE] },
-    {id: 5, name: "Tom Brown", role:"", permission: [] },
-    {id: 6, name: "Emily Davis", role:"", permission: [Permission.APPROVE] },
-    {id: 7, name: "Chris Wilson", role:"", permission: [] },
-    {id: 8, name: "Alex Johnson", role:"", permission: [] },
+    {id: 1, name: "John Doe", shortName:"JD", role:"", permission: [Permission.APPROVE, Permission.SIGN, Permission.RELEASE], backgroundColor: "#b7103d"},
+    {id: 2, name: "Jane Smith", shortName:"JM", role:"", permission: [Permission.APPROVE, Permission.SIGN], backgroundColor:"#6cd145" },
+    {id: 3, name: "Mike Johnson", shortName:"MJ", role:"", permission: [Permission.APPROVE, Permission.SIGN],backgroundColor:"#5a5b5b" },
+    {id: 4, name: "Sarah Lee", shortName:"SL", role:"", permission: [Permission.APPROVE], backgroundColor:"#39544f" },
+    {id: 5, name: "Tom Brown", shortName:"TB", role:"", permission: [], backgroundColor:"#330428" },
+    {id: 6, name: "Emily Davis", shortName:"ED", role:"", permission: [Permission.APPROVE], backgroundColor: "#0800f7" },
+    {id: 7, name: "Chris Wilson", shortName:"CW", role:"", permission: [], backgroundColor:"#9eb5c1" },
+    {id: 8, name: "Alex Johnson", shortName:"AJ", role:"", permission: [], backgroundColor:"#897a6a" },
 ];
 
 const roles = [
@@ -81,11 +83,20 @@ const Participants = () => {
         }
         if(hasError) return;
 
+        const getRandomHexColor = () => {
+            const randomChannel = () => Math.floor(Math.random() * 256)
+                .toString(16)
+                .padStart(2, '0'); // Đảm bảo luôn có 2 ký tự
+            return `#${randomChannel()}${randomChannel()}${randomChannel()}`;
+        };
+
         const newParticipant: User ={
             id: participants.length + 1,
             name: newName,
             role: selectedRole,
+            shortName: newName.split(' ').filter(word => word).map(word => word[0].toUpperCase()).join(''),
             permission: selectedPermissions,
+            backgroundColor: getRandomHexColor()
         };
 
         setParticipants([...participants, newParticipant]);

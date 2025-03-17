@@ -30,6 +30,7 @@ import {
     Create as CreateIcon,
     OpenInNew as OpenInNewIcon,
 } from "@mui/icons-material";
+import {User, initialUsers} from "./Participants";
 
 enum Status {
     Draft= "Draft", 
@@ -61,25 +62,6 @@ export const initialDocuments: Document[] = [
     {Id: 5,DocumentName:"Crew Transfer Agreement", Category:"HR", SharedWith:[{UserId:7,Authorize:"Needs to Sign"},{UserId:8,Authorize:"Needs to View"}],CreationDate: new Date("2023-05-25 10:00"), LastEdited: new Date("2023-06-08 10:00"), Status: Status.Signed},
 ]
 
-interface Participant {
-    Id: number;
-    Name: string;
-    ShortName: string;
-}
-
-const Participants: Participant[] = [
-    {Id: 1, Name: "John Doe", ShortName:"JD"},
-    {Id: 2, Name: "Jane Smith", ShortName:"JS"},
-    {Id: 3, Name: "Mike Johnson", ShortName:"MJ"},
-    {Id: 4, Name: "Sarah Lee", ShortName:"SL"},
-    {Id: 5, Name: "Tom Brown", ShortName:"TB"},
-    {Id: 6, Name: "Emily Davis", ShortName:"ED"},
-    {Id: 7, Name: "Chris Wilson", ShortName:"CW"},
-    {Id: 8, Name: "Ajex Johnson", ShortName:"AJ"},
-    {Id: 9, Name: "Olivia Martinez", ShortName:"OM"},
-    {Id: 10, Name: "Daniel Taylor", ShortName:"DT"},
-]
-
 const Documents = () => { 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
@@ -91,7 +73,7 @@ const Documents = () => {
     const [documentId, setDocumentId] = useState(0);
     const [draftDialogTitle, setDraftDialogTitle] = useState("");
     const [shareDialogTitle, setShareDialogTitle] = useState("");
-    const [users] = useState<Participant[]>(Participants);
+    const [users] = useState<User[]>(initialUsers);
     const [userId, setUserId] = useState(0);
     const [authorize,setAuthorize] = useState("");
     const [documentError, setDocumentError] = useState({
@@ -114,7 +96,7 @@ const Documents = () => {
     })
 
     const getUser = (id:number) => {
-        var result = users.find((user) => user.Id === id);
+        var result = users.find((user) => user.id === id);
         if(result){
             return result;
         }
@@ -132,15 +114,6 @@ const Documents = () => {
             default:
                 return { backgroundColor: "#ffffff", textColor: "#000000" }; // Default colors
         }
-    };
-
-    const getRandomColor = () => {
-        const letters = '0123456789ABCDEF';
-        let color = '#';
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
     };
 
     const getDocument = (id: number) => {
@@ -353,8 +326,8 @@ const Documents = () => {
                                         {document.SharedWith.map((user, index) =>(
                                             <Avatar
                                                 key={index}
-                                                sx={{backgroundColor:getRandomColor(), width:32, height: 32, fontSize: "1rem"}}>
-                                                {getUser(user.UserId)?.ShortName}
+                                                sx={{backgroundColor:getUser(user.UserId)?.backgroundColor, width:32, height: 32, fontSize: "1rem"}}>
+                                                {getUser(user.UserId)?.shortName}
                                             </Avatar>
                                         ))
                                         }
@@ -558,7 +531,7 @@ const Documents = () => {
                                             >
                                                 <MenuItem value="0"></MenuItem>
                                                 {users.map((user) => (
-                                                    <MenuItem key={user.Id} value={user.Id}>{user.Name}</MenuItem>
+                                                    <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>
                                                 ))}
                                             </Select>
                                         </Box>
@@ -592,7 +565,7 @@ const Documents = () => {
                         {getDocument(documentId)?.SharedWith.map((role, index) => (
                            <Box key={index} sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", width: '100%' }}>
                                 <Typography variant="body1">
-                                    <b>{getUser (role.UserId)?.Name}:</b> {role.Authorize}
+                                    <b>{getUser (role.UserId)?.name}:</b> {role.Authorize}
                                 </Typography>
                                 <Button onClick={() => deleteShareRecipient(role.UserId, role.Authorize)}>
                                     <PersonRemoveIcon />
