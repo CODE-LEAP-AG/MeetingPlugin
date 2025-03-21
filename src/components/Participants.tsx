@@ -1,24 +1,24 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
-    Card,Box,
-    Table,
-    TableHead,
-    TableBody,
-    TableRow,
-    TableCell,
-    TableContainer,
-    Paper,
-    Button,
-    Select,
-    MenuItem,
-    Dialog, 
-    DialogTitle, 
-    DialogContent, 
-    DialogActions, 
+    Stack,
+    DefaultButton,
+    PrimaryButton,
+    IconButton,
     TextField,
-    Typography
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+    Dropdown,
+    IDropdownOption,
+    Dialog,
+    DialogType,
+    DialogFooter,
+    DetailsList,
+    DetailsListLayoutMode,
+    SelectionMode,
+    IColumn,
+    Label,
+    Text,
+    mergeStyleSets
+} from "@fluentui/react";
+import { Delete24Filled } from "@fluentui/react-icons";
 
 export interface User {
     id: number;
@@ -36,17 +36,17 @@ export enum Permission {
 }
 
 export const initialUsers: User[] = [
-    {id: 1, name: "John Doe", shortName:"JD", role:"", permission: [Permission.APPROVE, Permission.SIGN, Permission.RELEASE], backgroundColor: "#b7103d"},
-    {id: 2, name: "Jane Smith", shortName:"JM", role:"", permission: [Permission.APPROVE, Permission.SIGN], backgroundColor:"#6cd145" },
-    {id: 3, name: "Mike Johnson", shortName:"MJ", role:"", permission: [Permission.APPROVE, Permission.SIGN],backgroundColor:"#5a5b5b" },
-    {id: 4, name: "Sarah Lee", shortName:"SL", role:"", permission: [Permission.APPROVE], backgroundColor:"#39544f" },
-    {id: 5, name: "Tom Brown", shortName:"TB", role:"", permission: [], backgroundColor:"#330428" },
-    {id: 6, name: "Emily Davis", shortName:"ED", role:"", permission: [Permission.APPROVE], backgroundColor: "#0800f7" },
-    {id: 7, name: "Chris Wilson", shortName:"CW", role:"", permission: [], backgroundColor:"#9eb5c1" },
-    {id: 8, name: "Alex Johnson", shortName:"AJ", role:"", permission: [], backgroundColor:"#897a6a" },
+    { id: 1, name: "John Doe", shortName: "JD", role: "", permission: [Permission.APPROVE, Permission.SIGN, Permission.RELEASE], backgroundColor: "#b7103d" },
+    { id: 2, name: "Jane Smith", shortName: "JM", role: "", permission: [Permission.APPROVE, Permission.SIGN], backgroundColor: "#6cd145" },
+    { id: 3, name: "Mike Johnson", shortName: "MJ", role: "", permission: [Permission.APPROVE, Permission.SIGN], backgroundColor: "#5a5b5b" },
+    { id: 4, name: "Sarah Lee", shortName: "SL", role: "", permission: [Permission.APPROVE], backgroundColor: "#39544f" },
+    { id: 5, name: "Tom Brown", shortName: "TB", role: "", permission: [], backgroundColor: "#330428" },
+    { id: 6, name: "Emily Davis", shortName: "ED", role: "", permission: [Permission.APPROVE], backgroundColor: "#0800f7" },
+    { id: 7, name: "Chris Wilson", shortName: "CW", role: "", permission: [], backgroundColor: "#9eb5c1" },
+    { id: 8, name: "Alex Johnson", shortName: "AJ", role: "", permission: [], backgroundColor: "#897a6a" },
 ];
 
-const roles = [
+const roles: string[] = [
     "Buyer",
     "Seller",
     "Bank for Buyer",
@@ -59,42 +59,60 @@ const roles = [
     "Ship Registry"
 ];
 
+const roleOptions: IDropdownOption[] = roles.map(role => ({ key: role, text: role }));
+
+const useStyles = mergeStyleSets({
+    container: {
+        padding: 20,
+        margin: 20,
+        border: '1px solid #e1e1e1',
+        borderRadius: 8
+    },
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20
+    },
+    permissionButton: {
+        marginRight: 8
+    },
+    tableBody: {
+    },
+    tableCell: {
+        alignItems: 'center'
+    }
+});
+
 const Participants = () => {
-    const [participants, setParticipants] = useState(initialUsers);
+    const [participants, setParticipants] = useState<User[]>(initialUsers);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [newName, setNewName] = useState("");
-    const [selectedRole, setSelectedRole] = useState("");
+    const [selectedRole, setSelectedRole] = useState<string>("");
     const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>([]);
-    const [error, setError] = useState({
-        name: false,
-    });
-    const [errorMessage, setErrorMessage] = useState({
-        name:""
-    })
+    const [error, setError] = useState({ name: false });
+    const [errorMessage, setErrorMessage] = useState({ name: "" });
 
     const addParticipant = () => {
-        setError({name:false});
-        setErrorMessage({name:""});
-        let hasError = false;
-        if(!newName.trim()){
-            setErrorMessage(prev => ({ ...prev, name: "This field is required" }));
-            setError(prev => ({ ...prev, name: true }));
-            hasError = true;
+        setError({ name: false });
+        setErrorMessage({ name: "" });
+
+        if (!newName.trim()) {
+            setErrorMessage({ name: "This field is required" });
+            setError({ name: true });
+            return;
         }
-        if(hasError) return;
 
         const getRandomHexColor = () => {
-            const randomChannel = () => Math.floor(Math.random() * 256)
-                .toString(16)
-                .padStart(2, '0'); // Đảm bảo luôn có 2 ký tự
+            const randomChannel = () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
             return `#${randomChannel()}${randomChannel()}${randomChannel()}`;
         };
 
-        const newParticipant: User ={
+        const newParticipant: User = {
             id: participants.length + 1,
             name: newName,
             role: selectedRole,
-            shortName: newName.split(' ').filter(word => word).map(word => word[0].toUpperCase()).join(''),
+            shortName: newName.split(' ').map(word => word[0]?.toUpperCase() || '').join(''),
             permission: selectedPermissions,
             backgroundColor: getRandomHexColor()
         };
@@ -103,19 +121,19 @@ const Participants = () => {
         closeDialog();
         resetData();
         alert("Created Successfully");
-    }
+    };
 
     const updateParticipant = (updatedParticipant: User) => {
-        setParticipants(prev => 
-            prev.map(participant => 
+        setParticipants(prev =>
+            prev.map(participant =>
                 participant.id === updatedParticipant.id ? updatedParticipant : participant
             )
         );
     };
-    
-    const deleteParticipant = (id: any) => {
-        setParticipants((prevParticipants) => prevParticipants.filter((participant) => participant.id !== id));
-    }
+
+    const deleteParticipant = (id: number) => {
+        setParticipants(prev => prev.filter(participant => participant.id !== id));
+    };
 
     const getPermissionColors = (permission: Permission) => {
         switch (permission) {
@@ -126,27 +144,24 @@ const Participants = () => {
             case Permission.SIGN:
                 return { backgroundColor: "#bbf7d0", textColor: "#166534" };
             default:
-                return { backgroundColor: "#ffffff", textColor: "#000000" }; // Default colors
+                return { backgroundColor: "#ffffff", textColor: "#000000" };
         }
     };
 
-    const handleRoleChange = (id:any, role:any) => {
-        setParticipants((prevParticipants) => 
-            prevParticipants.map((participant) => 
+    const handleRoleChange = (id: number, role: string) => {
+        setParticipants(prev =>
+            prev.map(participant =>
                 participant.id === id ? { ...participant, role } : participant
             )
         );
-    }
+    };
 
     const toggleCreatePermission = (permission: Permission) => {
-        setSelectedPermissions((prev) => {
-            if (prev.includes(permission)) {
-                return prev.filter((p) => p !== permission); // Remove permission if already selected
-            } else {
-                return [...prev, permission]; // Add permission if not selected
-            }
-        });
-    }
+        setSelectedPermissions(prev => prev.includes(permission)
+            ? prev.filter(p => p !== permission)
+            : [...prev, permission]);
+    };
+
     const togglePermission = (participant: User, permission: Permission) => {
         const updatedPermissions = participant.permission.includes(permission)
             ? participant.permission.filter(p => p !== permission)
@@ -155,246 +170,193 @@ const Participants = () => {
         updateParticipant({ ...participant, permission: updatedPermissions });
     };
 
-    const openDialog = () => {
-        setIsDialogOpen(true);
-    }
-
-    const closeDialog = () => {
-        setIsDialogOpen(false);
-    }
+    const openDialog = () => setIsDialogOpen(true);
+    const closeDialog = () => setIsDialogOpen(false);
 
     const resetData = () => {
         setNewName("");
         setSelectedRole("");
         setSelectedPermissions([]);
-    }
+    };
+
+    const columns: IColumn[] = [
+        {
+            key: 'column1',
+            name: 'Name',
+            fieldName: 'name',
+            minWidth: 180,
+            maxWidth:400,
+            isResizable: true,
+            isMultiline: true,
+            onRender: (participant: User) => (
+                <Text>{participant.name}</Text>
+            )
+        },
+        {
+            key: 'column2',
+            name: 'Role',
+            minWidth: 200,
+            maxWidth: 400,
+            isResizable:true,
+            onRender: (participant: User) => (
+                <Dropdown
+                    placeholder="Select a role"
+                    selectedKey={participant.role}
+                    options={roleOptions}
+                    onChange={(e, option) => handleRoleChange(participant.id, option?.text || '')}
+                    styles={{ dropdown: { width: 180 } }}
+                />
+            )
+        },
+        {
+            key: 'column3',
+            name: 'Permissions',
+            minWidth: 300,
+            maxWidth: 500,
+            isResizable: true,
+            onRender: (participant: User) => (
+                <Stack horizontal>
+                    {[Permission.APPROVE, Permission.SIGN, Permission.RELEASE].map(perm => {
+                        const selected = participant.permission.includes(perm);
+                        const { backgroundColor, textColor } = getPermissionColors(perm);
+                        return (
+                            <DefaultButton
+                                key={perm}
+                                text={perm}
+                                onClick={() => togglePermission(participant, perm)}
+                                styles={{
+                                    root: {
+                                        backgroundColor: selected ? backgroundColor : '#CCCCCC',
+                                        color: selected ? textColor : '#888888',
+                                        marginRight: 8,
+                                        borderRadius: 4,
+                                        height: 32
+                                    }
+                                }}
+                            />
+                        );
+                    })}
+                </Stack>
+            )
+        },
+        {
+            key: 'column4',
+            name: 'Actions',
+            minWidth: 50,
+            isResizable:true,
+            onRender: (participant: User) => (
+                <IconButton
+                    onClick={() => deleteParticipant(participant.id)}
+                    styles={{
+                        root: {
+                            padding: 4,
+                        }
+                    }}
+                >
+                    <Delete24Filled primaryFill="#000000" />
+                </IconButton>
+            )
+        }
+    ];
 
     return (
-        <Card sx={{ p: 3, m: 2 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box>
-                    <h1 style={{ fontWeight: "bold" }}>Role & Participant Management</h1>
-                </Box>
-                <Button 
-                variant="contained" 
-                onClick={openDialog} 
-                sx={{ 
-                    mb: 2, 
-                    width: 200, 
-                    backgroundColor:"black", 
-                    '&:hover': {backgroundColor: 'darkgray' }}}>
-                    Add Participant
-                </Button>
+        <Stack className={useStyles.container}>
+            <Stack horizontal horizontalAlign="space-between" className={useStyles.header}>
+                <Text variant="xLargePlus" styles={{ root: { fontWeight: 'bold'} }}>Role & Participant Management</Text>
+                <PrimaryButton 
+                    text="Add Participant" 
+                    onClick={openDialog} 
+                    styles={{ 
+                        root: { 
+                            width: 250, 
+                            backgroundColor: 'black', 
+                            color: 'white', 
+                            fontSize:18}, 
+                        rootHovered: { 
+                            backgroundColor: 'darkgray' 
+                        },
+                        label: { fontWeight: 'bold', fontSize: 17 } }} />
+            </Stack>
 
-            </Box>
+            <DetailsList
+                items={participants}
+                columns={columns}
+                layoutMode={DetailsListLayoutMode.justified}
+                selectionMode={SelectionMode.none}
+                className={useStyles.tableBody}
+                styles={{
+                    root: {
+                        width: '100%'
+                    },
+                    contentWrapper: {
+                        display: 'flex',
+                        flexGrow: 1
+                    }
+                }}
+            />
 
-            <TableContainer component={Paper} sx={{ mt: 2, width: "100%"}}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Role</TableCell>
-                            <TableCell>Permissions</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {participants.map((participant) => (
-                            <TableRow key={participant.id}>
-                                <TableCell sx={{maxWidth:10}}>{participant.name}</TableCell>
-                                <TableCell>
-                                    <Select
-                                        value={participant.role || ""}
-                                        onChange={(e) => handleRoleChange(participant.id, e.target.value)}
-                                        displayEmpty
-                                        sx={{width: 200}}
-                                    >
-                                        <MenuItem value=""></MenuItem>
-                                        {roles.map((role) => (
-                                            <MenuItem key={role} value={role}>{role}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </TableCell>
-                                
-                                {/* <TableCell>{participant.permission.join(", ")}</TableCell> */}
-                                <TableCell>
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => togglePermission(participant, Permission.APPROVE)}
-                                        sx={{backgroundColor: participant.permission.includes(Permission.APPROVE) ? getPermissionColors(Permission.APPROVE).backgroundColor : "#CCCCCC",
-                                            color: participant.permission.includes(Permission.APPROVE)? getPermissionColors(Permission.APPROVE).textColor: "#888888",
-                                            minWidth: 80,
-                                            borderRadius: 4,
-                                            mr: 2,
-                                            paddingBlock:0.5,
-                                            paddingLeft:1,
-                                            paddingRight:1,
-                                            fontSize:"14px",
-                                            fontWeight:"bold"}}
-                                    >
-                                        APPROVE
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => togglePermission(participant, Permission.SIGN)}
-                                        sx={{backgroundColor: participant.permission.includes(Permission.SIGN) ? getPermissionColors(Permission.SIGN).backgroundColor : "#CCCCCC",
-                                            color: participant.permission.includes(Permission.SIGN)? getPermissionColors(Permission.SIGN).textColor: "#888888",
-                                            minWidth: 80,
-                                            borderRadius: 4,
-                                            mr: 2,
-                                            paddingBlock:0.5,
-                                            paddingLeft:1,
-                                            paddingRight:1,
-                                            fontSize:"14px",
-                                            fontWeight:"bold"}}
-                                    >
-                                        SIGN
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => togglePermission(participant, Permission.RELEASE)}
-                                        sx={{backgroundColor: participant.permission.includes(Permission.RELEASE) ? getPermissionColors(Permission.RELEASE).backgroundColor : "#CCCCCC",
-                                            color: participant.permission.includes(Permission.RELEASE)? getPermissionColors(Permission.RELEASE).textColor: "#888888",
-                                            minWidth: 80,
-                                            borderRadius: 4,
-                                            mr: 2,
-                                            paddingBlock:0.5,
-                                            paddingLeft:1,
-                                            paddingRight:1,
-                                            fontSize:"14px",
-                                            fontWeight:"bold"}}
-                                    >
-                                        RELEASE
-                                    </Button>
-                                </TableCell>
-
-                                <TableCell>
-                                    <Button
-                                        variant="text"
-                                        color="inherit"
-                                        onClick={() => deleteParticipant(participant.id)}>
-                                        <DeleteIcon />
-                                    </Button>   
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <Dialog open={isDialogOpen} onClose={closeDialog} fullWidth>
-                <DialogTitle sx={{fontWeight: 'Bold'}}>Add New Participant</DialogTitle>
-                <DialogContent>
-                    <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column' }}>
-                        {/* Name */}
-                        <Typography variant="body1" fontWeight="bold">Participant's name</Typography>
-                        <TextField
-                        autoFocus
-                        margin="dense"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
+            <Dialog
+                hidden={!isDialogOpen}
+                onDismiss={closeDialog}
+                dialogContentProps={{
+                    type: DialogType.largeHeader,
+                    title: 'Add New Participant'
+                }}
+                modalProps={{
+                    isBlocking: false
+                }}
+                minWidth={600}
+                maxWidth={600}
+            >
+                <Stack tokens={{ childrenGap: 15 }}>
+                    <Label>Participant's name</Label>
+                    <TextField
                         value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        error={error.name}
-                        helperText={errorMessage.name}
+                        onChange={(e, newValue) => setNewName(newValue || "")}
+                        errorMessage={error.name ? errorMessage.name : ""}
                     />
-                    </Box>
 
-                    <Box sx={{mb:2}}>
-                        {/* Task Type Selection */}
-                        <Typography variant="body1" fontWeight="bold">Role</Typography>
-                        <Select
-                            value={selectedRole}
-                            onChange={(e) => setSelectedRole(e.target.value)}
-                            fullWidth
-                            variant="outlined"
-                        >
-                            {roles.map((role) => (
-                                <MenuItem value={role}>
-                                    {role}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </Box>
-                    
-                    <Box sx={{mb:2}}>
-                    {/* Task Type Selection */}
-                    <Typography variant="body1" fontWeight="bold">Permissions</Typography>
-                    <Button
-                            variant="contained"
-                            onClick={() => toggleCreatePermission(Permission.APPROVE)}
-                            sx={{
-                                backgroundColor: selectedPermissions.includes(Permission.APPROVE)
-                                    ? getPermissionColors(Permission.APPROVE).backgroundColor
-                                    : 'lightgray',
-                                color: selectedPermissions.includes(Permission.APPROVE)
-                                    ? getPermissionColors(Permission.APPROVE).textColor
-                                    : 'black',
-                                minWidth: 80,
-                                borderRadius: 4,
-                                mr: 1,
-                                paddingBlock:0.5,
-                                paddingLeft:1,
-                                paddingRight:1,
-                                fontSize:"14px",
-                                fontWeight: selectedPermissions.includes(Permission.APPROVE)? "bold" : "normal"
-                            }}
-                        >
-                            APPROVE
-                        </Button>
-                    <Button
-                            variant="contained"
-                            onClick={() => toggleCreatePermission(Permission.SIGN)}
-                            sx={{
-                                backgroundColor: selectedPermissions.includes(Permission.SIGN)
-                                    ? getPermissionColors(Permission.SIGN).backgroundColor
-                                    : 'lightgray',
-                                color: selectedPermissions.includes(Permission.SIGN)
-                                    ? getPermissionColors(Permission.SIGN).textColor
-                                    : 'black',
-                                minWidth: 80,
-                                borderRadius: 4,
-                                mr: 1,
-                                paddingBlock:0.5,
-                                paddingLeft:1,
-                                paddingRight:1,
-                                fontSize:"14px",
-                                fontWeight: selectedPermissions.includes(Permission.SIGN)? "bold" : "normal"
-                            }}
-                        >
-                            SIGN
-                        </Button>
-                    <Button
-                            variant="contained"
-                            onClick={() => toggleCreatePermission(Permission.RELEASE)}
-                            sx={{
-                                backgroundColor: selectedPermissions.includes(Permission.RELEASE)
-                                    ? getPermissionColors(Permission.RELEASE).backgroundColor
-                                    : 'lightgray',
-                                color: selectedPermissions.includes(Permission.RELEASE)
-                                    ? getPermissionColors(Permission.RELEASE).textColor
-                                    : 'black',
-                                minWidth: 80,
-                                borderRadius: 4,
-                                mr: 1,
-                                paddingBlock:0.5,
-                                paddingLeft:1,
-                                paddingRight:1,
-                                fontSize:"14px",
-                                fontWeight: selectedPermissions.includes(Permission.RELEASE)? "bold" : "normal"
-                            }}
-                        >
-                            RELEASE
-                        </Button>
-                </Box>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={closeDialog} variant="outlined">Cancel</Button>
-                    <Button onClick={addParticipant} color="primary" variant="contained" sx={{backgroundColor: 'black', color: 'white', '&:hover': {backgroundColor:'darkgray'}}}>Add Participant</Button>
-                </DialogActions>
+                    <Label>Role</Label>
+                    <Dropdown
+                        placeholder="Select a role"
+                        selectedKey={selectedRole}
+                        options={roleOptions}
+                        onChange={(e, option) => setSelectedRole(option?.text || '')}
+                    />
+
+                    <Label>Permissions</Label>
+                    <Stack horizontal>
+                        {[Permission.APPROVE, Permission.SIGN, Permission.RELEASE].map(perm => {
+                            const selected = selectedPermissions.includes(perm);
+                            const { backgroundColor, textColor } = getPermissionColors(perm);
+                            return (
+                                <DefaultButton
+                                    key={perm}
+                                    text={perm}
+                                    onClick={() => toggleCreatePermission(perm)}
+                                    styles={{
+                                        root: {
+                                            backgroundColor: selected ? backgroundColor : 'lightgray',
+                                            color: selected ? textColor : 'black',
+                                            marginRight: 8,
+                                            borderRadius: 4,
+                                            height: 32
+                                        }
+                                    }}
+                                />
+                            );
+                        })}
+                    </Stack>
+                </Stack>
+
+                <DialogFooter>
+                    <DefaultButton onClick={closeDialog} text="Cancel" />
+                    <PrimaryButton onClick={addParticipant} text="Add Participant" styles={{ root: { backgroundColor: 'black', color: 'white' }, rootHovered: { backgroundColor: 'darkgray' } }} />
+                </DialogFooter>
             </Dialog>
-        </Card>
+        </Stack>
     );
 };
 
 export default Participants;
+
