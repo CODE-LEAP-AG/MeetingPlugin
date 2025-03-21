@@ -1,36 +1,40 @@
 import { useState } from "react";
 import {
-    Card, 
-    Box,
-    Table,
-    TableHead,
-    TableBody,
-    TableRow,
-    TableCell,
-    TableContainer,
-    Paper,
-    Button,
-    Select,
-    MenuItem,
-    Checkbox,
-    Dialog, 
-    DialogTitle, 
-    DialogContent, 
-    DialogActions, 
-    TextField,
-    Typography,
-    Tooltip
-} from "@mui/material";
+  Text,
+  TextField,
+  Stack,
+  DetailsList,
+  DetailsListLayoutMode,
+  IDropdownOption,
+  SelectionMode,
+  CommandBar,
+  mergeStyleSets,
+  DefaultButton,
+  PrimaryButton,
+  IColumn,
+  Dropdown,
+  Label,
+  Dialog,
+  DialogType,
+  DialogFooter,
+  Checkbox,
+} from "@fluentui/react";
 import {
-    Share as ShareIcon,    
-    Delete as DeleteIcon
-} from "@mui/icons-material";
+    Delete24Filled,
+    Share24Regular,
+} from "@fluentui/react-icons";
 
 enum Status {
     Pending = "Pending",
     In_Progress = "In Progress",
     Complete = "Complete"
 }
+
+const statusOptions: IDropdownOption[] = [
+    { key: Status.Pending, text: Status.Pending },
+    { key: Status.In_Progress, text: Status.In_Progress },
+    { key: Status.Complete, text: Status.Complete },
+  ];
 
 export interface Task {
     id: number;
@@ -46,9 +50,9 @@ export interface Task {
 export const initialTasks: Task[] = [
     { id: 1, name: "Bunker Fuel Quantity (MT)", type: "Value Input", inputType: "number", value: "500", assignee: "", status: Status.Pending, document: "Fuel and Cargo Agreement" },
     { id: 2, name: "Sale Includes Bunkers & Cargo?", type: "Confirmation", inputType: "checkbox", value: false, assignee: "", status: Status.Pending, document: "Fuel and Cargo Agreement" },
-    { id: 3, name: "Last Dry Dock Inspection Date", type: "Value Input", inputType: "date", value: "", assignee: "", status: Status.Pending, document: "Technical Inspection Report" },
+    { id: 3, name: "Last Dry Dock Inspection Date", type: "Value Input", inputType: "date", value: "", assignee: "", status: Status.In_Progress, document: "Technical Inspection Report" },
     { id: 4, name: "Class Certificates Status", type: "Value Input", inputType: "text", value: "", assignee: "", status: Status.Pending, document: "Technical Inspection Report" },
-    { id: 5, name: "Outstanding Crew Wages (USD)", type: "Value Input", inputType: "number", value: "", assignee: "", status: Status.Pending, document: "Financial Statement" },
+    { id: 5, name: "Outstanding Crew Wages (USD)", type: "Value Input", inputType: "number", value: "", assignee: "", status: Status.Complete, document: "Financial Statement" },
 ];
 
 export const documents = [
@@ -61,8 +65,39 @@ export const documents = [
     "Bill of Sale",
     "Legal Terms and Conditions"
 ];
+const documentsOptions: IDropdownOption[] = documents.map(document => ({ key: document, text: document }));
 
 const assignees = ["John Doe", "Jane Smith", "Robert Johnson"];
+const assigneesOptions: IDropdownOption[] = assignees.map(assignee => ({ key: assignee, text: assignee }));
+
+const taskTypes = ["Value Input", "Confirmation", "Document"]
+const taskTypeOptions: IDropdownOption[] = taskTypes.map(taskType => ({ key: taskType, text: taskType }));
+
+const inputTypes = ["Number", "Checkbox", "Date", "Text"]
+const inputTypeOptions: IDropdownOption[] = inputTypes.map(inputType => ({ key: inputType, text: inputType }));
+
+const useStyles = mergeStyleSets({
+    container: {
+        padding: 20,
+        margin: 20,
+        border: '1px solid #e1e1e1',
+        borderRadius: 8
+    },
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20
+    },
+    permissionButton: {
+        marginRight: 8
+    },
+    tableBody: {
+    },
+    tableCell: {
+        alignItems: 'center'
+    }
+});
 
 const Task = () => {
     const [tasks, setTasks] = useState(initialTasks);
@@ -153,6 +188,8 @@ const Task = () => {
         // Validation
         let hasError = false;
 
+        console.log(dialogState);
+
         if (!dialogState.newTask.name.trim()) {
             setAddTaskErrorMessage(prev => ({ ...prev, title: "This field is required" }));
             setAddTaskError(prev => ({ ...prev, title: true }));
@@ -221,271 +258,383 @@ const Task = () => {
         );
     };
 
-    return (
-        <Card sx={{ p: 3, m: 2 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box>
-                    <h1 style={{ fontWeight: "bold" }}>Task Management</h1>
-                    <h4 style={{ color: "gray", fontWeight:"normal" }}>Manage and track ship sale closing tasks</h4>
-                </Box>
-                <Button 
-                    variant="contained" 
+    const commandBarItems = (task: Task) => {
+        return [
+          {
+            key: "share",
+            text: <Share24Regular />,
+            iconProps: { iconName: "Share" },
+            onClick: () => handleShareDialogOpen(task),
+          },
+          {
+            key: "delete",
+            text: <Delete24Filled />,
+            iconProps: { iconName: "Delete" },
+            onClick: () => deleteTask(task.id),
+          },
+        ];
+      };
+
+    const columns: IColumn[] = [
+        { key: "id", 
+            name: "#", 
+            fieldName: "Id",
+            isResizable:true, 
+            minWidth: 30, 
+            maxWidth: 50,
+            onRender: (item: Task, index?: number) => (
+                <span style={{ fontSize: 14 }}>{(index ?? 0) + 1}</span>
+            ),
+        },{ key: "taskName", 
+            name: "Task Name", 
+            fieldName: "taskName",
+            isResizable:true,
+            isMultiline:true, 
+            minWidth: 150, 
+            maxWidth: 250,
+            onRender: (item: Task, index?: number) => (
+                <span style={{ fontSize: 14 }}>{item.name}</span>
+            ),
+        },{ key: "taskType", 
+            name: "Task Type", 
+            fieldName: "taskType",
+            isResizable:true, 
+            isMultiline:true,
+            minWidth: 60, 
+            maxWidth: 100,
+            onRender: (item: Task, index?: number) => (
+                <span style={{ fontSize: 14 }}>{item.type}</span>
+            ),
+        },{ key: "inputField", 
+            name: "Input Field", 
+            fieldName: "inputField",
+            isResizable:true, 
+            minWidth:60,
+            maxWidth:120,
+            onRender: (item: Task, index?: number) => (
+                <input
+                    type={item.inputType}
+                    style={{ border: "1px solid lightgray", padding: "4px", borderRadius: "4px", maxWidth: "7rem" }}
+                    value={item.value}
+                    onChange={(e) => handleInputChange(item.id, e.target.value)}
+                />
+            ),
+        },{ key: 'assignee',
+            name: 'Assignee',
+            fieldName: "assignee",
+            minWidth: 180,
+            maxWidth: 200,
+            isResizable:true,
+            onRender: (item: Task) => (
+                <Dropdown
+                    placeholder="Select a assignee"
+                    selectedKey={item.assignee}
+                    options={assigneesOptions}
+                    onChange={(e, option) => handleAssigneeChange(item.id, option?.text || '')}
+                    styles={{ dropdown: { width: 180 } }}
+                />
+            )
+        },{ key: 'status',
+            name: 'Status',
+            fieldName: "status",
+            minWidth: 120,
+            maxWidth: 150,
+            isResizable: true,
+            onRender: (item: Task) => (
+              <Dropdown
+                placeholder="Select status"
+                selectedKey={item.status}
+                options={statusOptions}
+                onChange={(e, option) =>
+                  handleStatusChange(item.id, option?.text || '')
+                }
+                styles={{
+                  root: { width: 120,},
+                  dropdown: {
+                    color: getStatusColors(item.status).textColor,
+                    backgroundColor: getStatusColors(item.status).backgroundColor,
+                    border: `2px solid ${getStatusColors(item.status).backgroundColor}`,
+                    borderRadius: 4
+                  },
+                  dropdownItem: {
+                    padding: 0,
+                    margin: 0,
+                    fontWeight: 'bold',
+                  },
+                  dropdownItemSelected: {
+                    padding: 0,
+                    margin: 0,
+                    fontWeight: 'bold',
+                  },
+                  title: {
+                    color: getStatusColors(item.status).textColor,
+                    backgroundColor: getStatusColors(item.status).backgroundColor,
+                    fontWeight:'bold'
+                  }
+                }}
+                onRenderOption={(option, defaultRender) => {
+                    const optionStatus = option.key as Status;
+                    const colors = getStatusColors(optionStatus);
+                  
+                    return (
+                        <div
+                        style={{
+                          backgroundColor: colors.backgroundColor,
+                          color: colors.textColor,
+                          width: '100%', // Bắt buộc để fill full vùng dropdown item
+                          height: '100%', // Đảm bảo toàn bộ chiều cao item
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-start', // hoặc center nếu cần
+                          padding: '8px 12px',
+                          boxSizing: 'border-box',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {option.text}
+                      </div>
+                    );
+                  }}
+              />
+            )
+        },{ key: "document", 
+            name: "Document", 
+            fieldName: "document",
+            isResizable:true,
+            isMultiline:true, 
+            minWidth: 150, 
+            maxWidth: 250,
+            onRender: (item: Task, index?: number) => (
+                <span style={{ fontSize: 14 }}>{item.document}</span>
+            ),
+        },{ key: "action",
+              name: "Actions",
+              fieldName: "actions",
+              isResizable:true, 
+              onRender: (item: Task) => (
+                <CommandBar
+                  items={commandBarItems(item)}
+                  styles={{ root: { padding: 0 } }}
+                />
+              ),
+              minWidth: 100,
+        }
+    ];
+    return(
+        <Stack className={useStyles.container}>
+            <Stack horizontal horizontalAlign="space-between" className={useStyles.header}>
+                <Stack>
+                    <Text variant="xLargePlus" styles={{ root: { fontWeight: 'bold', marginTop: 10} }}>
+                    Task Management
+                    </Text>
+                    <Text variant="medium" style={{ color: "gray", marginTop: 20}}>
+                    Manage and track ship sale closing task
+                    </Text>
+                </Stack>
+                <PrimaryButton 
+                    text="Add Task" 
                     onClick={handleDialogOpen} 
-                    sx={{ 
-                        mb: 2, 
-                        width: 200, 
-                        backgroundColor: "black", '&:hover': { backgroundColor: 'darkgray' }}}>
-                        Add Task
-                </Button>
-            </Box>
+                    styles={{ 
+                        root: { 
+                            width: 250, 
+                            backgroundColor: 'black', 
+                            color: 'white', 
+                            fontWeight:"bold"
+                        }, 
+                        rootHovered: { 
+                            backgroundColor: 'darkgray' 
+                        },
+                        label: {
+                            fontWeight:"bold", 
+                            fontSize:17
+                        } }} />
+            </Stack>
 
-            <TableContainer component={Paper} sx={{ mt: 2 }}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>#</TableCell>
-                            <TableCell>Task Name</TableCell>
-                            <TableCell>Task Type</TableCell>
-                            <TableCell>Input Field</TableCell>
-                            <TableCell>Assignee</TableCell>
-                            <TableCell>Status</TableCell>
-                            <TableCell>Document</TableCell>
-                            <TableCell>Action</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {tasks.map((task, index) => (
-                            <TableRow key={task.id}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell sx={{ maxWidth: 30 }}>{task.name}</TableCell>
-                                <TableCell sx={{ maxWidth: 30 }}>{task.type}</TableCell>
-                                <TableCell sx={{ maxWidth: 50 }}>
-                                        <input
-                                            type={task.inputType}
-                                            style={{ border: "1px solid lightgray", padding: "4px", borderRadius: "4px", maxWidth: "7rem" }}
-                                            value={task.value}
-                                            onChange={(e) => handleInputChange(task.id, e.target.value)}
-                                        />
-                                </TableCell>
-                                <TableCell sx={{ maxWidth: 120 }}>
-                                    <Select
-                                        value={task.assignee || ""}
-                                        onChange={(e) => handleAssigneeChange(task.id, e.target.value)}
-                                        displayEmpty
-                                        sx={{ height: 30, width: 160, minWidth: 160, borderColor: "lightGrey" }}
-                                    >
-                                        <MenuItem value="">Unassigned</MenuItem>
-                                        {assignees.map((assignee) => (
-                                            <MenuItem key={assignee} value={assignee}>{assignee}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </TableCell>
-                                <TableCell sx={{ maxWidth: 110 }}>
-                                    <Select
-                                        value={task.status || ""}
-                                        onChange={(e) => handleStatusChange(task.id, e .target.value as Status)}
-                                        displayEmpty
-                                        sx={{
-                                            height: 30,
-                                            width: 150,
-                                            borderRadius: 4,
-                                            mr: 2,
-                                            paddingBlock: 0.5,
-                                            paddingLeft: 1,
-                                            paddingRight: 1,
-                                            fontSize: "14px",
-                                            fontWeight: "bold",
-                                            backgroundColor: getStatusColors(task.status).backgroundColor,
-                                            color: getStatusColors(task.status).textColor
-                                        }}
-                                    >
-                                        {Object.values(Status).map((status) => (
-                                            <MenuItem
-                                                key={status}
-                                                value={status}
-                                                sx={{
-                                                    bgcolor: getStatusColors(status).backgroundColor,
-                                                    color: getStatusColors(status).textColor,
-                                                    borderRadius: 4,
-                                                    mr: 2,
-                                                    paddingBlock: 0.5,
-                                                    paddingLeft: 1,
-                                                    paddingRight: 1,
-                                                    fontSize: "14px",
-                                                    fontWeight: "bold"
-                                                }}
-                                            >
-                                                {status}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </TableCell>
-                                <TableCell sx={{ maxWidth: 100 }}>{task.document}</TableCell>
-                                <TableCell>
-                                    <Tooltip title="Share Task">
-                                        <Button
-                                            variant="text"
-                                            color="inherit"
-                                            onClick={() => handleShareDialogOpen(task)}
-                                        >
-                                            <ShareIcon />
-                                        </Button>
-                                    </Tooltip>
-                                    <Button
-                                        variant="text"
-                                        color="inherit"
-                                        onClick={() => deleteTask(task.id)}
-                                        sx={{ ml: 2 }}
-                                    >
-                                        <DeleteIcon />
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <DetailsList 
+                items={tasks}
+                columns={columns}
+                layoutMode={DetailsListLayoutMode.justified}
+                selectionMode={SelectionMode.none}
+                className={useStyles.tableBody}
+                styles={{
+                    root: {
+                        width: '100%'
+                    },
+                    contentWrapper: {
+                        display: 'flex',
+                        flexGrow: 1
+                    }
+                }}
+            />
 
-            <Dialog open={dialogState.isOpen} onClose={closeDialog} fullWidth>
-                <DialogTitle sx={{ fontSize: 30, fontWeight: 'bold' }}>Add New Task</DialogTitle>
-                <DialogContent>
-                    <TableContainer>
-                        <Table>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end", fontSize:20}}>Title</Typography></TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            autoFocus
-                                            margin="dense"
-                                            type="text"
-                                            fullWidth
-                                            variant="outlined"
-                                            value={dialogState.newTask.name}
-                                            onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, name: e.target.value } }))}
-                                            error={addTaskError.title}
-                                            helperText={addTaskErrorMessage.title}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end", fontSize:20}}>Type</Typography></TableCell>
-                                    <TableCell>
-                                        <Box>
-                                            {addTaskErrorMessage.type && <Typography color="error">{addTaskErrorMessage.type}</Typography>}
-                                            <Select
-                                            value={dialogState.newTask.type}
-                                            onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, type: e.target.value } }))}
-                                            fullWidth
-                                            variant="outlined"
-                                            error={addTaskError.type}
-                                            >
-                                                <MenuItem value="Value Input">Value Input</MenuItem>
-                                                <MenuItem value="Confirmation">Confirmation</MenuItem>
-                                                <MenuItem value="Document">Document</MenuItem>
-                                            </Select>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                                {dialogState.newTask.type === "Value Input" ? 
-                                <TableRow>
-                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end", fontSize:20}}>Field Type</Typography></TableCell>
-                                    <TableCell>
-                                        <Box>
-                                            {addTaskErrorMessage.inputType && <Typography color="error">{addTaskErrorMessage.inputType}</Typography>}
-                                            <Select
-                                            value={dialogState.newTask.inputType}
-                                            onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, inputType: e.target.value } }))}
-                                            fullWidth
-                                            variant="outlined"
-                                            error={addTaskError.type}
-                                            >
-                                                <MenuItem value="Number">Number</MenuItem>
-                                                <MenuItem value="Checkbox">Checkbox</MenuItem>
-                                                <MenuItem value="Date">Date</MenuItem>
-                                                <MenuItem value="Text">Text</MenuItem>
-                                            </Select>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow> : ""}
-                                <TableRow>
-                                    <TableCell><Typography variant="body1" fontWeight="bold" sx={{display:"flex", justifyContent:"flex-end", fontSize:20}}>Document Name</Typography> </TableCell>
-                                    <TableCell>
-                                        <Box>
-                                            {addTaskErrorMessage.documentName && <Typography color="error">{addTaskErrorMessage.documentName}</Typography>}
-                                            <Select
-                                                value={dialogState.newTask.document}
-                                                onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, document: e.target.value } }))}
-                                                fullWidth
-                                                variant="outlined"
-                                                error={addTaskError.documentName}
-                                            >
-                                                {documents.map((doc) => (
-                                                    <MenuItem key={doc} value={doc}>{doc}</MenuItem>
-                                                ))}
-                                            </Select>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={closeDialog} variant="outlined">Cancel</Button>
-                    <Button onClick={addNewTask} color="primary" variant="contained" sx={{ backgroundColor: 'black', color: 'white', '&:hover': { backgroundColor: 'darkgray' } }}>Add Task</Button>
-                </DialogActions>
+            <Dialog hidden={!dialogState.isOpen}
+                onDismiss={closeDialog}
+                dialogContentProps={{
+                    type: DialogType.largeHeader,
+                    title: 'Add New Task'
+                }}
+                modalProps={{
+                    isBlocking: false
+                }}
+                minWidth={600}
+                maxWidth={600}>
+                <Stack tokens={{ childrenGap: 15 }}>
+                    <Label>Task Name</Label>
+                    <TextField
+                        autoFocus
+                        type="text"
+                        value={dialogState.newTask.name}
+                        onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, name: e.target.value } }))}
+                        errorMessage={addTaskError.title ? addTaskErrorMessage.title : ""}
+                    />
+
+                    <Label>Task Type</Label>
+                    {addTaskError.type && (
+                        <Text style={{ color: 'red' }}>{addTaskErrorMessage.type}</Text>
+                    )}
+
+                    <Dropdown
+                        placeholder="Select type"
+                        options={taskTypeOptions}
+                        selectedKey={dialogState.newTask.type}
+                        onChange={(e, option) => {
+                        setDialogState(prev => ({
+                            ...prev,
+                            newTask: { ...prev.newTask, type: option?.key || '' },
+                        }));
+                        }}
+                        styles={{
+                        root: { width: '100%' },
+                        }}
+                    />
+
+                    {dialogState.newTask.type === "Value Input" ? 
+                        <Stack>
+                            <Label>Input Type</Label>
+                            {addTaskError.inputType && (
+                                <Text style={{ color: "red" }}>{addTaskErrorMessage.inputType}</Text>
+                            )}
+                            <Dropdown
+                            placeholder="Select status"
+                            options={inputTypeOptions}
+                            value={dialogState.newTask.inputType}
+                            onChange={(e, option) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, inputType: option?.key } }))}
+                            styles={{root:{
+                                width: '100%',
+                            }}}
+                            />
+                        </Stack>
+                    : ""}
+
+                    <Label>Document Name</Label>
+                    {addTaskError.documentName && (
+                        <Text style={{ color: 'red' }}>{addTaskErrorMessage.documentName}</Text>
+                    )}
+                    <Dropdown
+                        placeholder="Select Document"
+                        options={documentsOptions}
+                        selectedKey={dialogState.newTask.document} 
+                        onChange={(e, option) => {
+                        setDialogState(prev => ({
+                            ...prev,
+                            newTask: { ...prev.newTask, document: option?.key || '' },
+                        }));
+                        }}
+                        styles={{
+                        root: { width: '100%' },
+                        }}
+                    />
+                    
+                </Stack>
+
+                <DialogFooter>
+                    <DefaultButton onClick={closeDialog} text="Cancel" />
+                    <PrimaryButton onClick={addNewTask} text="Add Participant" styles={{ root: { backgroundColor: 'black', color: 'white' }, rootHovered: { backgroundColor: 'darkgray' } }} />
+                </DialogFooter>
             </Dialog>
 
-            <Dialog open={dialogState.isShareOpen} onClose={closeDialog} fullWidth>
-                <DialogTitle sx={{ fontWeight: 'bold' }}>Share Task</DialogTitle>
-                <DialogContent>
-                    <Table>
-                        <TableBody>
-                            <TableRow>
-                                <TableCell>Task Name</TableCell>
-                                <TableCell>{dialogState.sharedTask.name}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>Task Type</TableCell>
-                                <TableCell>{dialogState.sharedTask.type}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>Linked Document</TableCell>
-                                <TableCell>{dialogState.sharedTask.document}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>Input Field</TableCell>
-                                <TableCell>
-                                    {dialogState.sharedTask.type === "Confirmation" ? (
-                                        <Checkbox
-                                            checked={Boolean(dialogState.sharedTask.value)}
-                                            disabled
-                                        />
-                                    ) : dialogState.sharedTask.value}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>Status</TableCell>
-                                <TableCell sx={{ bgcolor: getStatusColors(dialogState.sharedTask.status).backgroundColor, color: getStatusColors(dialogState.sharedTask.status).textColor }}>
-                                    {dialogState.sharedTask.status}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>Instructions</TableCell>
-                                <TableCell>
-                                    <TextField autoFocus />
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={closeDialog} variant="outlined">Cancel</Button>
-                    <Button onClick={() => { closeDialog(); alert("Task shared!"); }} color="primary" variant="contained" sx={{ backgroundColor: 'black', color: 'white', '&:hover': { backgroundColor: 'darkgray' } }}>Send</Button>
-                </DialogActions>
+            <Dialog
+            hidden={!dialogState.isShareOpen}
+            onDismiss={closeDialog}
+            dialogContentProps={{
+                type: DialogType.largeHeader,
+                title: "Share Task"
+            }}
+            modalProps={{ isBlocking: false }}
+            >
+            <Stack tokens={{ childrenGap: 16 }} styles={{ root: { width: "100%" } }}>
+                {/* Task Name */}
+                <Stack horizontal>
+                <Label styles={{ root: { width: "40%" } }}>Task Name:</Label>
+                <Text>{dialogState.sharedTask.name}</Text>
+                </Stack>
+
+                {/* Task Type */}
+                <Stack horizontal>
+                <Label styles={{ root: { width: "40%" } }}>Task Type:</Label>
+                <Text>{dialogState.sharedTask.type}</Text>
+                </Stack>
+
+                {/* Linked Document */}
+                <Stack horizontal>
+                <Label styles={{ root: { width: "40%" } }}>Linked Document:</Label>
+                <Text>{dialogState.sharedTask.document}</Text>
+                </Stack>
+
+                {/* Input Field */}
+                {dialogState.sharedTask.value ? 
+                <Stack horizontal>
+                <Label styles={{ root: { width: "40%" } }}>Input Field:</Label>
+                {dialogState.sharedTask.type === "Confirmation" ? (
+                    <Checkbox checked={Boolean(dialogState.sharedTask.value)} disabled />
+                ) : (
+                    <Text>{dialogState.sharedTask.value}</Text>
+                )}
+                </Stack> : ""}
+                
+
+                {/* Status */}
+                <Stack horizontal>
+                <Label styles={{ root: { width: "40%" } }}>Status:</Label>
+                <Text
+                    styles={{
+                    root: {
+                        backgroundColor: getStatusColors(dialogState.sharedTask.status).backgroundColor,
+                        color: getStatusColors(dialogState.sharedTask.status).textColor,
+                        padding: "4px 8px",
+                        borderRadius: 4
+                    }
+                    }}
+                >
+                    {dialogState.sharedTask.status}
+                </Text>
+                </Stack>
+
+                {/* Instructions */}
+                <Stack horizontal verticalAlign="center">
+                <Label styles={{ root: { width: "40%" } }}>Instructions:</Label>
+                <TextField placeholder="Enter instructions" />
+                </Stack>
+            </Stack>
+
+            <DialogFooter>
+                <DefaultButton onClick={closeDialog} text="Cancel" />
+                <PrimaryButton
+                onClick={() => {
+                    closeDialog();
+                    alert("Task shared!");
+                }}
+                text="Send"
+                styles={{
+                    root: { backgroundColor: "black", color: "white" },
+                    rootHovered: { backgroundColor: "darkgray" }
+                }}
+                />
+            </DialogFooter>
             </Dialog>
-        </Card>
+        </Stack>
+
+        
     );
 };
 
