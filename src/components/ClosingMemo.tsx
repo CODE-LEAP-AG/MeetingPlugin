@@ -160,7 +160,7 @@ const ClosingMemo = ({memos, users, tasks, documents, steps, setMemos} : MemosPr
           <TooltipHost content="Download Memo">
           <IconButton
                 iconProps={{ iconName: 'Download' }}
-                onClick={() => downloadMemo(memoId +1)} // ✅ Pass cả memo vào
+                onClick={() => downloadMemo(memoId +1)}
                 style={{color:"#000000"}}
             >
               <ArrowDownload20Filled />
@@ -182,7 +182,7 @@ const ClosingMemo = ({memos, users, tasks, documents, steps, setMemos} : MemosPr
   ];
 
   return (
-    <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 20, margin: 10, border: '1px solid #eee', borderRadius: 8, boxShadow: '0 2px 5px rgba(0,0,0,0.1)' } }}>
+    <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 20, margin: 20, border: '1px solid #eee', borderRadius: 8, boxShadow: '0 2px 5px rgba(0,0,0,0.1)' } }}>
       <Stack horizontal horizontalAlign="space-between" verticalAlign="center">
         <Text variant="xLargePlus" styles={{ root: { fontWeight: 'bold' } }}>
           Closing Memos
@@ -212,7 +212,7 @@ const ClosingMemo = ({memos, users, tasks, documents, steps, setMemos} : MemosPr
     isOpen={isViewDialogOpen}
     onDismiss={closeViewMemo}
     type={PanelType.medium}
-    isLightDismiss={true} // ✅ thêm vào để cho phép click ra ngoài mới đóng Panel
+    isLightDismiss={true}
     onRenderNavigation={() => (
         <Stack horizontal horizontalAlign="space-between" verticalAlign="center" styles={{ root: { padding: '10px 16px' } }}>
         <Text variant="large" styles={{ root: { fontWeight: 'bold' } }}>

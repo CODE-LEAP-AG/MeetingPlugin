@@ -410,13 +410,13 @@ const Task = ({documents, tasks, participants, setTasks} : TaskProps) => {
                             width: 250, 
                             backgroundColor: 'black', 
                             color: 'white', 
-                            fontWeight:"bold"
                         }, 
                         rootHovered: { 
                             backgroundColor: 'darkgray' 
                         },
                         label: {
                             fontWeight:"bold", 
+                            fontSize:17
                         } }} />
             </Stack>
 
