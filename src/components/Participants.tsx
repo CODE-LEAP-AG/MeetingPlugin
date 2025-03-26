@@ -19,15 +19,13 @@ import {
     mergeStyleSets
 } from "@fluentui/react";
 import { Delete24Filled } from "@fluentui/react-icons";
+import { User } from "../types/Interface";
 
-export interface User {
-    id: number;
-    name: string;
-    shortName: string;
-    role: string;
-    permission: Permission[];
-    backgroundColor: string;
-}
+interface ParticipantsProps {
+    participants: User[],
+    setParticipants: React.Dispatch<React.SetStateAction<User[]>>
+  }
+  
 
 export enum Permission {
     APPROVE = "Approve",
@@ -84,8 +82,7 @@ const useStyles = mergeStyleSets({
     }
 });
 
-const Participants = () => {
-    const [participants, setParticipants] = useState<User[]>(initialUsers);
+const Participants = ({participants, setParticipants}: ParticipantsProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [newName, setNewName] = useState("");
     const [selectedRole, setSelectedRole] = useState<string>("");
@@ -203,7 +200,7 @@ const Participants = () => {
                     placeholder="Select a role"
                     selectedKey={participant.role}
                     options={roleOptions}
-                    onChange={(e, option) => handleRoleChange(participant.id, option?.text || '')}
+                    onChange={(_, option) => handleRoleChange(participant.id, option?.text || '')}
                     styles={{ dropdown: { width: 180 } }}
                 />
             )
@@ -312,7 +309,7 @@ const Participants = () => {
                     <Label>Participant's name</Label>
                     <TextField
                         value={newName}
-                        onChange={(e, newValue) => setNewName(newValue || "")}
+                        onChange={(_, newValue) => setNewName(newValue || "")}
                         errorMessage={error.name ? errorMessage.name : ""}
                     />
 
@@ -321,7 +318,7 @@ const Participants = () => {
                         placeholder="Select a role"
                         selectedKey={selectedRole}
                         options={roleOptions}
-                        onChange={(e, option) => setSelectedRole(option?.text || '')}
+                        onChange={(_, option) => setSelectedRole(option?.text || '')}
                     />
 
                     <Label>Permissions</Label>

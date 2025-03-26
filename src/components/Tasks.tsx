@@ -23,58 +23,23 @@ import {
     Delete24Filled,
     Share24Regular,
 } from "@fluentui/react-icons";
+import type{
+    Task,
+    Document,
+    User,
+} from "../types/Interface";
+import {
+    Task_Step_Status as Status,
+    taskStepStatusColors as statusColors,
+    Task_Step_Status
+} from "../types/Enum";
 
-enum Status {
-    Pending = "Pending",
-    In_Progress = "In Progress",
-    Complete = "Complete"
+interface TaskProps {
+  documents: Document[];
+  tasks: Task[];
+  participants: User[];
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
 }
-
-const statusOptions: IDropdownOption[] = [
-    { key: Status.Pending, text: Status.Pending },
-    { key: Status.In_Progress, text: Status.In_Progress },
-    { key: Status.Complete, text: Status.Complete },
-  ];
-
-export interface Task {
-    id: number;
-    name: string;
-    type: string;
-    inputType: string;
-    value: string | number | boolean;
-    assignee: string;
-    status: Status;
-    document: string;
-}
-
-export const initialTasks: Task[] = [
-    { id: 1, name: "Bunker Fuel Quantity (MT)", type: "Value Input", inputType: "number", value: "500", assignee: "", status: Status.Pending, document: "Fuel and Cargo Agreement" },
-    { id: 2, name: "Sale Includes Bunkers & Cargo?", type: "Confirmation", inputType: "checkbox", value: false, assignee: "", status: Status.Pending, document: "Fuel and Cargo Agreement" },
-    { id: 3, name: "Last Dry Dock Inspection Date", type: "Value Input", inputType: "date", value: "", assignee: "", status: Status.In_Progress, document: "Technical Inspection Report" },
-    { id: 4, name: "Class Certificates Status", type: "Value Input", inputType: "text", value: "", assignee: "", status: Status.Pending, document: "Technical Inspection Report" },
-    { id: 5, name: "Outstanding Crew Wages (USD)", type: "Value Input", inputType: "number", value: "", assignee: "", status: Status.Complete, document: "Financial Statement" },
-];
-
-export const documents = [
-    "Fuel and Cargo Agreement",
-    "Technical Inspection Report",
-    "Vessel Classification Certificate",
-    "Financial Statement",
-    "Insurance Policy",
-    "Delivery Agreement",
-    "Bill of Sale",
-    "Legal Terms and Conditions"
-];
-const documentsOptions: IDropdownOption[] = documents.map(document => ({ key: document, text: document }));
-
-const assignees = ["John Doe", "Jane Smith", "Robert Johnson"];
-const assigneesOptions: IDropdownOption[] = assignees.map(assignee => ({ key: assignee, text: assignee }));
-
-const taskTypes = ["Value Input", "Confirmation", "Document"]
-const taskTypeOptions: IDropdownOption[] = taskTypes.map(taskType => ({ key: taskType, text: taskType }));
-
-const inputTypes = ["Number", "Checkbox", "Date", "Text"]
-const inputTypeOptions: IDropdownOption[] = inputTypes.map(inputType => ({ key: inputType, text: inputType }));
 
 const useStyles = mergeStyleSets({
     container: {
@@ -99,8 +64,7 @@ const useStyles = mergeStyleSets({
     }
 });
 
-const Task = () => {
-    const [tasks, setTasks] = useState(initialTasks);
+const Task = ({documents, tasks, participants, setTasks} : TaskProps) => {
     const [dialogState, setDialogState] = useState({
         isOpen: false,
         isShareOpen: false,
@@ -131,18 +95,22 @@ const Task = () => {
         documentName: ""
     });
 
-    const getStatusColors = (status: Status) => {
-        switch (status) {
-            case Status.Pending:
-                return { backgroundColor: "#fef08a", textColor: "#854D0E" };
-            case Status.In_Progress:
-                return { backgroundColor: "#bfdbfe", textColor: "#1e40af" };
-            case Status.Complete:
-                return { backgroundColor: "#bbf7d0", textColor: "#166534" };
-            default:
-                return { backgroundColor: "#ffffff", textColor: "#000000" }; // Default colors
-        }
-    };
+    const statusOptions: IDropdownOption[] = [
+        { key: Status.Pending, text: Status.Pending },
+        { key: Status.In_Progress, text: Status.In_Progress },
+        { key: Status.Complete, text: Status.Complete },
+    ];
+
+    const documentsOptions: IDropdownOption[] = documents.map(doc=>doc.DocumentName).map(document => ({ key: document, text: document }));
+
+    const assigneesOptions: IDropdownOption[] = participants.map(x=>x.name).map(assignee => ({ key: assignee, text: assignee }));
+
+    const taskTypes = ["Value Input", "Confirmation", "Document"]
+    const taskTypeOptions: IDropdownOption[] = taskTypes.map(taskType => ({ key: taskType, text: taskType }));
+
+    const inputTypes = ["Number", "Checkbox", "Date", "Text"]
+    const inputTypeOptions: IDropdownOption[] = inputTypes.map(inputType => ({ key: inputType, text: inputType }));
+
 
     const handleDialogOpen = () => setDialogState(prev => ({ ...prev, isOpen: true }));
     const handleShareDialogOpen = (task: Task) => {
@@ -262,14 +230,18 @@ const Task = () => {
         return [
           {
             key: "share",
-            text: <Share24Regular />,
+            text: "Share",
             iconProps: { iconName: "Share" },
+            iconOnly: true,
+            onRenderIcon: () => <Share24Regular />,
             onClick: () => handleShareDialogOpen(task),
           },
           {
             key: "delete",
-            text: <Delete24Filled />,
+            text: "Delete",
             iconProps: { iconName: "Delete" },
+            iconOnly: true,
+            onRenderIcon: () => <Delete24Filled />, // Render icon tùy chỉnh
             onClick: () => deleteTask(task.id),
           },
         ];
@@ -282,7 +254,7 @@ const Task = () => {
             isResizable:true, 
             minWidth: 30, 
             maxWidth: 50,
-            onRender: (item: Task, index?: number) => (
+            onRender: (_: Task, index?: number) => (
                 <span style={{ fontSize: 14 }}>{(index ?? 0) + 1}</span>
             ),
         },{ key: "taskName", 
@@ -292,7 +264,7 @@ const Task = () => {
             isMultiline:true, 
             minWidth: 150, 
             maxWidth: 250,
-            onRender: (item: Task, index?: number) => (
+            onRender: (item: Task) => (
                 <span style={{ fontSize: 14 }}>{item.name}</span>
             ),
         },{ key: "taskType", 
@@ -302,7 +274,7 @@ const Task = () => {
             isMultiline:true,
             minWidth: 60, 
             maxWidth: 100,
-            onRender: (item: Task, index?: number) => (
+            onRender: (item: Task) => (
                 <span style={{ fontSize: 14 }}>{item.type}</span>
             ),
         },{ key: "inputField", 
@@ -311,11 +283,11 @@ const Task = () => {
             isResizable:true, 
             minWidth:60,
             maxWidth:120,
-            onRender: (item: Task, index?: number) => (
+            onRender: (item: Task) => (
                 <input
                     type={item.inputType}
                     style={{ border: "1px solid lightgray", padding: "4px", borderRadius: "4px", maxWidth: "7rem" }}
-                    value={item.value}
+                    value={typeof item.value === "boolean" ? String(item.value) : item.value}
                     onChange={(e) => handleInputChange(item.id, e.target.value)}
                 />
             ),
@@ -330,7 +302,7 @@ const Task = () => {
                     placeholder="Select a assignee"
                     selectedKey={item.assignee}
                     options={assigneesOptions}
-                    onChange={(e, option) => handleAssigneeChange(item.id, option?.text || '')}
+                    onChange={(_, option) => handleAssigneeChange(item.id, option?.text || '')}
                     styles={{ dropdown: { width: 180 } }}
                 />
             )
@@ -345,15 +317,15 @@ const Task = () => {
                 placeholder="Select status"
                 selectedKey={item.status}
                 options={statusOptions}
-                onChange={(e, option) =>
-                  handleStatusChange(item.id, option?.text || '')
+                onChange={(_, option) =>
+                  handleStatusChange(item.id, option?.text as Task_Step_Status || '')
                 }
                 styles={{
                   root: { width: 120,},
                   dropdown: {
-                    color: getStatusColors(item.status).textColor,
-                    backgroundColor: getStatusColors(item.status).backgroundColor,
-                    border: `2px solid ${getStatusColors(item.status).backgroundColor}`,
+                    color: statusColors[item.status].textColor,
+                    backgroundColor: statusColors[item.status].backgroundColor,
+                    border: `2px solid ${statusColors[item.status].backgroundColor}`,
                     borderRadius: 4
                   },
                   dropdownItem: {
@@ -367,20 +339,19 @@ const Task = () => {
                     fontWeight: 'bold',
                   },
                   title: {
-                    color: getStatusColors(item.status).textColor,
-                    backgroundColor: getStatusColors(item.status).backgroundColor,
+                    color: statusColors[item.status].textColor,
+                    backgroundColor: statusColors[item.status].backgroundColor,
                     fontWeight:'bold'
                   }
                 }}
-                onRenderOption={(option, defaultRender) => {
+                onRenderOption={(option: any) => {
                     const optionStatus = option.key as Status;
-                    const colors = getStatusColors(optionStatus);
                   
                     return (
                         <div
                         style={{
-                          backgroundColor: colors.backgroundColor,
-                          color: colors.textColor,
+                          backgroundColor: statusColors[optionStatus].backgroundColor,
+                          color: statusColors[optionStatus].textColor,
                           width: '100%', // Bắt buộc để fill full vùng dropdown item
                           height: '100%', // Đảm bảo toàn bộ chiều cao item
                           display: 'flex',
@@ -403,8 +374,8 @@ const Task = () => {
             isResizable:true,
             isMultiline:true, 
             minWidth: 150, 
-            maxWidth: 250,
-            onRender: (item: Task, index?: number) => (
+            maxWidth: 200,
+            onRender: (item: Task) => (
                 <span style={{ fontSize: 14 }}>{item.document}</span>
             ),
         },{ key: "action",
@@ -446,7 +417,6 @@ const Task = () => {
                         },
                         label: {
                             fontWeight:"bold", 
-                            fontSize:17
                         } }} />
             </Stack>
 
@@ -484,7 +454,7 @@ const Task = () => {
                         autoFocus
                         type="text"
                         value={dialogState.newTask.name}
-                        onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, name: e.target.value } }))}
+                        onChange={(e) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, name: (e.target as HTMLInputElement).value } }))}
                         errorMessage={addTaskError.title ? addTaskErrorMessage.title : ""}
                     />
 
@@ -497,10 +467,10 @@ const Task = () => {
                         placeholder="Select type"
                         options={taskTypeOptions}
                         selectedKey={dialogState.newTask.type}
-                        onChange={(e, option) => {
+                        onChange={(_, option) => {
                         setDialogState(prev => ({
                             ...prev,
-                            newTask: { ...prev.newTask, type: option?.key || '' },
+                            newTask: { ...prev.newTask, type: String(option?.key) || '' },
                         }));
                         }}
                         styles={{
@@ -517,8 +487,8 @@ const Task = () => {
                             <Dropdown
                             placeholder="Select status"
                             options={inputTypeOptions}
-                            value={dialogState.newTask.inputType}
-                            onChange={(e, option) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, inputType: option?.key } }))}
+                            selectedKey={dialogState.newTask.inputType}
+                            onChange={(_, option) => setDialogState(prev => ({ ...prev, newTask: { ...prev.newTask, inputType: String(option?.key) } }))}
                             styles={{root:{
                                 width: '100%',
                             }}}
@@ -534,10 +504,10 @@ const Task = () => {
                         placeholder="Select Document"
                         options={documentsOptions}
                         selectedKey={dialogState.newTask.document} 
-                        onChange={(e, option) => {
+                        onChange={(_, option) => {
                         setDialogState(prev => ({
                             ...prev,
-                            newTask: { ...prev.newTask, document: option?.key || '' },
+                            newTask: { ...prev.newTask, document: String(option?.key) || '' },
                         }));
                         }}
                         styles={{
@@ -599,8 +569,8 @@ const Task = () => {
                 <Text
                     styles={{
                     root: {
-                        backgroundColor: getStatusColors(dialogState.sharedTask.status).backgroundColor,
-                        color: getStatusColors(dialogState.sharedTask.status).textColor,
+                        backgroundColor: statusColors[dialogState.sharedTask.status].backgroundColor,
+                        color: statusColors[dialogState.sharedTask.status].textColor,
                         padding: "4px 8px",
                         borderRadius: 4
                     }
