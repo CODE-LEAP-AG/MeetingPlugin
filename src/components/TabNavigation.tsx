@@ -140,7 +140,12 @@ const MeetingTab = () => {
 
       {/* Tab Content */}
       <div className={styles.tabContent}>
-        {selectedTab === "dashboard" && <Dashboard />}
+        {selectedTab === "dashboard" && 
+          <Dashboard 
+          documents={documentsData}
+          steps={stepsData}
+          tasks={tasksData}
+          />}
         {selectedTab === "closingsteps" && (<ClosingStep 
           memos={memosData}
           users={participantsData}

@@ -1,9 +1,83 @@
 {
-    "id": "08de9880-d660-4372-a382-63c5e657129b",
-    "appId": "edbb50d1-55f1-4e10-9e10-a8050cf93bd2",
-    "name": "MeetingPlugin-aad",
-    "accessTokenAcceptedVersion": 2,
+    "id": "40979330-0127-450b-83a0-badc5b69daaa",
+    "appId": "2614594e-b94b-4288-9bd2-41e98f3eb4c2",
+    "displayName": "MeetingPlugin-aad",
+    "identifierUris": [
+        "api://localhost:53000/2614594e-b94b-4288-9bd2-41e98f3eb4c2"
+    ],
     "signInAudience": "AzureADMyOrg",
+    "api": {
+        "requestedAccessTokenVersion": 2,
+        "oauth2PermissionScopes": [
+            {
+                "adminConsentDescription": "Allows Teams to call the app's web APIs as the current user.",
+                "adminConsentDisplayName": "Teams can access app's web APIs",
+                "id": "9d32176a-1ba4-401d-8e3e-ee8d625c4f41",
+                "isEnabled": true,
+                "type": "User",
+                "userConsentDescription": "Enable Teams to call this app's web APIs with the same rights that you have",
+                "userConsentDisplayName": "Teams can access app's web APIs and make requests on your behalf",
+                "value": "access_as_user"
+            }
+        ],
+        "preAuthorizedApplications": [
+            {
+                "appId": "1fec8e78-bce4-4aaf-ab1b-5451cc387264",
+                "delegatedPermissionIds": [
+                    "9d32176a-1ba4-401d-8e3e-ee8d625c4f41"
+                ]
+            },
+            {
+                "appId": "5e3ce6c0-2b1f-4285-8d4b-75ee78787346",
+                "delegatedPermissionIds": [
+                    "9d32176a-1ba4-401d-8e3e-ee8d625c4f41"
+                ]
+            },
+            {
+                "appId": "d3590ed6-52b3-4102-aeff-aad2292ab01c",
+                "delegatedPermissionIds": [
+                    "9d32176a-1ba4-401d-8e3e-ee8d625c4f41"
+                ]
+            },
+            {
+                "appId": "00000002-0000-0ff1-ce00-000000000000",
+                "delegatedPermissionIds": [
+                    "9d32176a-1ba4-401d-8e3e-ee8d625c4f41"
+                ]
+            },
+            {
+                "appId": "bc59ab01-8403-45c6-8796-ac3ef710b3e3",
+                "delegatedPermissionIds": [
+                    "9d32176a-1ba4-401d-8e3e-ee8d625c4f41"
+                ]
+            },
+            {
+                "appId": "0ec893e0-5785-4de6-99da-4ed124e5296c",
+                "delegatedPermissionIds": [
+                    "9d32176a-1ba4-401d-8e3e-ee8d625c4f41"
+                ]
+            },
+            {
+                "appId": "4765445b-32c6-49b0-83e6-1d93765276ca",
+                "delegatedPermissionIds": [
+                    "9d32176a-1ba4-401d-8e3e-ee8d625c4f41"
+                ]
+            },
+            {
+                "appId": "4345a7b9-9a63-4910-a426-35363201d503",
+                "delegatedPermissionIds": [
+                    "9d32176a-1ba4-401d-8e3e-ee8d625c4f41"
+                ]
+            },
+            {
+                "appId": "27922004-5251-4030-b22d-91ecd9a37ea4",
+                "delegatedPermissionIds": [
+                    "9d32176a-1ba4-401d-8e3e-ee8d625c4f41"
+                ]
+            }
+        ]
+    },
+    "info": {},
     "optionalClaims": {
         "idToken": [],
         "accessToken": [
@@ -16,6 +90,9 @@
         ],
         "saml2Token": []
     },
+    "publicClient": {
+        "redirectUris": []
+    },
     "requiredResourceAccess": [
         {
             "resourceAppId": "00000003-0000-0000-c000-000000000000",
@@ -27,89 +104,16 @@
             ]
         }
     ],
-    "oauth2Permissions": [
-        {
-            "adminConsentDescription": "Allows Teams to call the app's web APIs as the current user.",
-            "adminConsentDisplayName": "Teams can access app's web APIs",
-            "id": "c3ece51b-4d54-42a8-be97-15aecfebb255",
-            "isEnabled": true,
-            "type": "User",
-            "userConsentDescription": "Enable Teams to call this app's web APIs with the same rights that you have",
-            "userConsentDisplayName": "Teams can access app's web APIs and make requests on your behalf",
-            "value": "access_as_user"
-        }
-    ],
-    "preAuthorizedApplications": [
-        {
-            "appId": "1fec8e78-bce4-4aaf-ab1b-5451cc387264",
-            "permissionIds": [
-                "c3ece51b-4d54-42a8-be97-15aecfebb255"
-            ]
-        },
-        {
-            "appId": "5e3ce6c0-2b1f-4285-8d4b-75ee78787346",
-            "permissionIds": [
-                "c3ece51b-4d54-42a8-be97-15aecfebb255"
-            ]
-        },
-        {
-            "appId": "d3590ed6-52b3-4102-aeff-aad2292ab01c",
-            "permissionIds": [
-                "c3ece51b-4d54-42a8-be97-15aecfebb255"
-            ]
-        },
-        {
-            "appId": "00000002-0000-0ff1-ce00-000000000000",
-            "permissionIds": [
-                "c3ece51b-4d54-42a8-be97-15aecfebb255"
-            ]
-        },
-        {
-            "appId": "bc59ab01-8403-45c6-8796-ac3ef710b3e3",
-            "permissionIds": [
-                "c3ece51b-4d54-42a8-be97-15aecfebb255"
-            ]
-        },
-        {
-            "appId": "0ec893e0-5785-4de6-99da-4ed124e5296c",
-            "permissionIds": [
-                "c3ece51b-4d54-42a8-be97-15aecfebb255"
-            ]
-        },
-        {
-            "appId": "4765445b-32c6-49b0-83e6-1d93765276ca",
-            "permissionIds": [
-                "c3ece51b-4d54-42a8-be97-15aecfebb255"
-            ]
-        },
-        {
-            "appId": "4345a7b9-9a63-4910-a426-35363201d503",
-            "permissionIds": [
-                "c3ece51b-4d54-42a8-be97-15aecfebb255"
-            ]
-        },
-        {
-            "appId": "27922004-5251-4030-b22d-91ecd9a37ea4",
-            "permissionIds": [
-                "c3ece51b-4d54-42a8-be97-15aecfebb255"
-            ]
-        }
-    ],
-    "identifierUris": [
-        "api://localhost:53000/edbb50d1-55f1-4e10-9e10-a8050cf93bd2"
-    ],
-    "replyUrlsWithType": [
-        {
-            "url": "https://localhost:53000/auth-end.html",
-            "type": "Web"
-        },
-        {
-            "url": "https://localhost:53000/auth-end.html?clientId=edbb50d1-55f1-4e10-9e10-a8050cf93bd2",
-            "type": "Spa"
-        },
-        {
-            "url": "https://localhost:53000/blank-auth-end.html",
-            "type": "Spa"
-        }
-    ]
+    "web": {
+        "redirectUris": [
+            "https://localhost:53000/auth-end.html"
+        ],
+        "implicitGrantSettings": {}
+    },
+    "spa": {
+        "redirectUris": [
+            "https://localhost:53000/auth-end.html?clientId=2614594e-b94b-4288-9bd2-41e98f3eb4c2",
+            "https://localhost:53000/blank-auth-end.html"
+        ]
+    }
 }

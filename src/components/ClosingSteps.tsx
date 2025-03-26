@@ -178,9 +178,9 @@ const ClosingSteps = ({memos, users, documents, steps, tasks, setSteps, setMemos
     };
 
     return (
-        <Stack tokens={{ childrenGap: 20 }} className={useStyles.container}>
-            <Stack>
-                <Stack horizontalAlign="space-between" className={useStyles.header}>
+        <Stack tokens={{ childrenGap: 20 }} >
+            <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 20, margin: 20, border: '1px solid #eee', borderRadius: 8, boxShadow: '0 2px 5px rgba(0,0,0,0.1)' } }}>
+            <Stack horizontalAlign="space-between" className={useStyles.header}>
                     <Text variant="xLargePlus" styles={{ root: { fontWeight: 'bold', textAlign:"left", marginBottom: 50, marginTop:10} }}>
                         Closing Step Management
                     </Text>
@@ -207,7 +207,10 @@ const ClosingSteps = ({memos, users, documents, steps, tasks, setSteps, setMemos
                                 rootHovered: {
                                     backgroundColor: 'darkgray'
                                 },
-                                label: { fontWeight: 'bold' }
+                                label: { 
+                                    fontWeight: 'bold',
+                                    fontSize: 17
+                                 }
                             }}
                         />
                     </Stack>

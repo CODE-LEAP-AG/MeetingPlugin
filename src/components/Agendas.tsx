@@ -14,8 +14,8 @@ const useStyles = makeStyles({
     gap: tokens.spacingHorizontalS,
   },
   checkedText: {
-    textDecoration: "line-through", // Gạch ngang khi được tick
-    color: tokens.colorNeutralForegroundDisabled, // Màu xám nhẹ để rõ hơn
+    textDecoration: "line-through",
+    color: tokens.colorNeutralForegroundDisabled, 
   },
 });
 

@@ -218,8 +218,6 @@ const Documents = ({documents, setDocuments}: DocumentProps) => {
     setAuthorize("");
 };
 
-
-
   const deleteShareRecipient = (userId: number) => {
     setDocuments(
       documents.map((doc) => {
@@ -236,6 +234,7 @@ const Documents = ({documents, setDocuments}: DocumentProps) => {
       })
     );
   };
+
   const commandBarItems = (doc: Document) => {
     return [
       {
@@ -281,7 +280,6 @@ const Documents = ({documents, setDocuments}: DocumentProps) => {
     ];
   };
   
-
   const columns: IColumn[] = [
     { key: "column1", 
       name: "#", 
@@ -398,7 +396,6 @@ const Documents = ({documents, setDocuments}: DocumentProps) => {
   ];
 
   return (
-    // <Stack style={{ padding: 16, margin: 16 }}>
     <Stack className={useStyles.container}>
       <Stack horizontal horizontalAlign="space-between" className={useStyles.header}>
         <Stack>
@@ -459,13 +456,16 @@ const Documents = ({documents, setDocuments}: DocumentProps) => {
         <Stack tokens={{ childrenGap: 15 }}>
           <Label>Document Name</Label>
           <TextField
+            placeholder="Document Name"
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle((e.target as HTMLInputElement).value)}
             errorMessage={documentErrorMessage.title || ""}
           />
 
+          <Label>Document URL</Label>
           <TextField
+            placeholder="Document URL"
             type="text"
             value={newURL}
             onChange={(e) => setNewURL((e.target as HTMLInputElement).value)}
