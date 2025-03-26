@@ -1,16 +1,4 @@
-import React, { useState } from "react";
-import {
-  Button,
-  Dialog,
-  DialogSurface,
-  DialogBody,
-  DialogTitle,
-  DialogActions,
-  DialogContent,
-  Input,
-  Dropdown,
-  Option,
-} from "@fluentui/react-components";
+import { useState } from "react";
 import {
   Text,
   TextField,
@@ -23,76 +11,71 @@ import {
   mergeStyleSets,
   PrimaryButton,
   IColumn,
-  Label
+  Label,
+  DefaultButton,
+  Dialog,
+  IconButton,
+  DialogFooter,
+  Dropdown,
+  DialogType
 } from "@fluentui/react";
 import {
     CheckmarkCircle24Regular,
     Delete24Filled,
-    Dismiss24Regular,
     Eye24Filled,
     Open24Filled,
     Pen24Filled,
     PersonDelete24Filled,
     Share24Regular,
   } from "@fluentui/react-icons";
-import {User, initialUsers} from "./Participants";
-
-enum Status {
-    Draft= "Draft", 
-    Approved= "Approved", 
-    Signed= "Signed", 
-    Released= "Released", 
-}
-
-export interface Role{
-    UserId: number,
-    Authorize: string,
-}
-
-export interface Document {
-    Id: number;
-    DocumentName: string;
-    Category: string;
-    SharedWith: Role[];
-    CreationDate: Date;
-    LastEdited: Date;
-    Status: Status;
-}
+import { 
+  Document,
+  User
+} from "../types/Interface";
+import {
+  DocumentStatus as Status,
+  documentStatusColors as statusColors
+} from "../types/Enum"
+import { initialUsers} from "./Participants";
 
 export const initialDocuments: Document[] = [
-    {Id: 1,DocumentName:"Purchase Agreement", Category:"Legal", SharedWith:[{UserId:1,Authorize:"Needs to Sign"},{UserId:2,Authorize:"Needs to View"}],CreationDate: new Date("2023-06-01 10:00"), LastEdited: new Date("2023-06-05 10:00"), Status: Status.Approved},
-    {Id: 2,DocumentName:"Non-Disclosure Agreement", Category:"Legal", SharedWith:[{UserId:3,Authorize:"Needs to Sign"}],CreationDate: new Date("2023-05-15 10:00"), LastEdited: new Date("2023-06-02 10:00"), Status: Status.Approved},
-    {Id: 3,DocumentName:"Vessel Inspection Report", Category:"Technical", SharedWith:[{UserId:4,Authorize:"Needs to View"},{UserId:5,Authorize:"Needs to Sign"}],CreationDate: new Date("2023-05-20 10:00"), LastEdited: new Date("2023-06-10 10:00"), Status: Status.Released},
-    {Id: 4,DocumentName:"Financial Due Diligence Report", Category:"Financial", SharedWith:[{UserId:6,Authorize:"Needs to View"}],CreationDate: new Date("2023-06-07 10:00"), LastEdited: new Date("2023-06-07 10:00"), Status: Status.Draft},
-    {Id: 5,DocumentName:"Crew Transfer Agreement", Category:"HR", SharedWith:[{UserId:7,Authorize:"Needs to Sign"},{UserId:8,Authorize:"Needs to View"}],CreationDate: new Date("2023-05-25 10:00"), LastEdited: new Date("2023-06-08 10:00"), Status: Status.Signed},
+    {Id: 1,DocumentName:"Purchase Agreement", Category:"Legal", SharedWith:[{UserId:1,Authorize:["Needs to Sign","Needs to View"]},{UserId:2,Authorize:["Needs to View"]}],CreationDate: new Date("2023-06-01 10:00"), LastEdited: new Date("2023-06-05 10:00"), Status: Status.Approved},
+    {Id: 2,DocumentName:"Non-Disclosure Agreement", Category:"Legal", SharedWith:[{UserId:3,Authorize:["Needs to Sign"]}],CreationDate: new Date("2023-05-15 10:00"), LastEdited: new Date("2023-06-02 10:00"), Status: Status.Approved},
+    {Id: 3,DocumentName:"Vessel Inspection Report", Category:"Technical", SharedWith:[{UserId:4,Authorize:["Needs to View"]},{UserId:5,Authorize:["Needs to Sign"]}],CreationDate: new Date("2023-05-20 10:00"), LastEdited: new Date("2023-06-10 10:00"), Status: Status.Released},
+    {Id: 4,DocumentName:"Financial Due Diligence Report", Category:"Financial", SharedWith:[{UserId:6,Authorize:["Needs to View"]}],CreationDate: new Date("2023-06-07 10:00"), LastEdited: new Date("2023-06-07 10:00"), Status: Status.Draft},
+    {Id: 5,DocumentName:"Crew Transfer Agreement", Category:"HR", SharedWith:[{UserId:7,Authorize:["Needs to Sign"]},{UserId:8,Authorize:["Needs to View"]}],CreationDate: new Date("2023-05-25 10:00"), LastEdited: new Date("2023-06-08 10:00"), Status: Status.Signed},
 ]
 
+interface DocumentProps {
+  documents: Document[];
+  setDocuments: React.Dispatch<React.SetStateAction<Document[]>>;
+}
+
 const useStyles = mergeStyleSets({
-    container: {
-        padding: 20,
-        margin: 20,
-        border: '1px solid #e1e1e1',
-        borderRadius: 8
-    },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20
-    },
-    permissionButton: {
-        marginRight: 8
-    },
-    tableBody: {
-    },
-    tableCell: {
-        alignItems: 'center'
-    }
+  container: {
+      padding: 20,
+      margin: 20,
+      border: '1px solid #e1e1e1',
+      borderRadius: 8
+  },
+  header: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 20
+  },
+  permissionButton: {
+      marginRight: 8
+  },
+  tableBody: {
+  },
+  tableCell: {
+      alignItems: 'center'
+  }
 });
 
-const Documents = () => {
-  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
-  const [users, setUsers] = useState<User[]>(initialUsers);
+const Documents = ({documents, setDocuments}: DocumentProps) => {
+  const [users] = useState<User[]>(initialUsers);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSharedDialogOpen, setIsSharedDialogOpen] = useState(false);
@@ -106,7 +89,7 @@ const Documents = () => {
   const [draftDialogTitle, setDraftDialogTitle] = useState("");
   const [shareDialogTitle, setShareDialogTitle] = useState("");
 
-  const [documentError, setDocumentError] = useState({
+  const [_, setDocumentError] = useState({
     title: false,
     url: false,
     category: false,
@@ -212,25 +195,32 @@ const Documents = () => {
   const addShareRecipient = () => {
     if (!userId || !authorize) return;
 
-    setDocuments(
-      documents.map((doc) => {
-        if (doc.Id === documentId) {
-          return {
-            ...doc,
-            SharedWith: [
-              ...doc.SharedWith,
-              { UserId: userId, Authorize: authorize },
-            ],
-          };
-        }
-        return doc;
+    setDocuments((prevDocuments) =>
+      prevDocuments.map((doc) => {
+        if (doc.Id !== documentId) return doc;
+
+        return {
+          ...doc,
+          SharedWith: doc.SharedWith.map((sh) =>
+            sh.UserId === userId
+              ? { ...sh, Authorize: [...new Set([...sh.Authorize, authorize])] }
+              : sh
+          ).concat(
+            doc.SharedWith.some((sh) => sh.UserId === userId)
+              ? []
+              : [{ UserId: userId, Authorize: [authorize] }]
+          ),
+        };
       })
     );
+
     setUserId(0);
     setAuthorize("");
-  };
+};
 
-  const deleteShareRecipient = (userId: number, authorize: string) => {
+
+
+  const deleteShareRecipient = (userId: number) => {
     setDocuments(
       documents.map((doc) => {
         if (doc.Id === documentId) {
@@ -238,7 +228,7 @@ const Documents = () => {
             ...doc,
             SharedWith: doc.SharedWith.filter(
               (share) =>
-                share.UserId !== userId || share.Authorize !== authorize
+                share.UserId !== userId
             ),
           };
         }
@@ -246,54 +236,51 @@ const Documents = () => {
       })
     );
   };
-
-  const getStatusColors = (status: Status) => {
-    switch (status) {
-        case Status.Draft:
-            return { backgroundColor: "#fef08a", textColor: "#854D0E" };
-        case Status.Approved:
-            return { backgroundColor: "#bfdbfe", textColor: "#1e40af" };
-        case Status.Released:
-            return { backgroundColor: "#e9d5ff", textColor: "#6b21a8" };
-        case Status.Signed:
-            return { backgroundColor: "#bbf7d0", textColor: "#166534" };
-        default:
-            return { backgroundColor: "#ffffff", textColor: "#000000" }; // Default colors
-    }
-};
-
   const commandBarItems = (doc: Document) => {
     return [
       {
         key: "preview",
-        text: <Eye24Filled />,
-        iconProps: { iconName: "RedEye" },
+        text: "Preview", // Để tránh lỗi TypeScript
+        iconProps: { iconName: "RedEye" }, // Để giữ layout
+        iconOnly: true,
+        onRenderIcon: () => <Eye24Filled />, // Render icon tùy chỉnh
         onClick: () => openDraftDocumentDialog(doc.Id),
       },
       {
         key: "changeStatus",
-        text: doc.Status === Status.Draft ? <CheckmarkCircle24Regular /> : 
-            doc.Status === Status.Approved ? <Pen24Filled /> : 
-            (doc.Status === Status.Signed || doc.Status === Status.Released) ? <Open24Filled /> : ""
-        ,
+        text: "Change Status",
         iconProps: { iconName: "Sync" },
-        disabled: doc.Status === "Released",
+        iconOnly: true,
+        onRenderIcon: () =>
+          doc.Status === Status.Draft ? (
+            <CheckmarkCircle24Regular />
+          ) : doc.Status === Status.Approved ? (
+            <Pen24Filled />
+          ) : (doc.Status === Status.Signed || doc.Status === Status.Released) ? (
+            <Open24Filled />
+          ) : null,
+        disabled: doc.Status === Status.Released,
         onClick: () => changeDocumentStatus(doc.Id),
       },
       {
         key: "share",
-        text: <Share24Regular />,
+        text: "Share",
         iconProps: { iconName: "Share" },
+        iconOnly: true,
+        onRenderIcon: () => <Share24Regular />,
         onClick: () => openSharedDocumentDialog(doc.Id),
       },
       {
         key: "delete",
-        text: <Delete24Filled />,
+        text: "Delete",
         iconProps: { iconName: "Delete" },
+        iconOnly: true,
+        onRenderIcon: () => <Delete24Filled />,
         onClick: () => deleteDocument(doc.Id),
       },
     ];
   };
+  
 
   const columns: IColumn[] = [
     { key: "column1", 
@@ -302,7 +289,7 @@ const Documents = () => {
       isResizable:true, 
       minWidth: 30, 
       maxWidth: 50,
-      onRender: (item: Document, index?: number) => (
+      onRender: (_: Document, index?: number) => (
         <span style={{ fontSize: 14 }}>{(index ?? 0) + 1}</span>
       ),
     },
@@ -332,15 +319,19 @@ const Documents = () => {
       isResizable:true, 
       onRender: (item: Document) => (
         <Stack horizontal tokens={{ childrenGap: 5 }}>
-          {item.SharedWith.map((share, index) => (
-            <Persona
-              key={index}
-              text={getUser(share.UserId).name}
-              hidePersonaDetails
-            />
-          ))}
+          {item.SharedWith.map((share, index) => {
+            const user = getUser(share.UserId);
+            return (
+              <Persona
+                key={index}
+                text={user ? user.name : "Unknown User"} // Nếu `undefined`, hiển thị "Unknown User"
+                hidePersonaDetails
+              />
+            );
+          })}
         </Stack>
-      ),
+      )
+      ,
       minWidth: 150,
     },
     {
@@ -377,8 +368,8 @@ const Documents = () => {
             alignItems: "center",  // Căn giữa theo chiều dọc
             textAlign:"center",
             height: "100%", 
-            backgroundColor:getStatusColors(item.Status).backgroundColor,
-            color: getStatusColors(item.Status).textColor,
+            backgroundColor:statusColors[item.Status].backgroundColor,
+            color: statusColors[item.Status].textColor,
             fontWeight: "bold",
             fontSize: 14,
             padding:"10px 10px",
@@ -454,157 +445,175 @@ const Documents = () => {
       />
 
       {/* Add Document Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={closeDialog}>
-        <DialogSurface>
-          <DialogBody>
-            <DialogTitle style={{fontWeight: 'Bold'}}>Add New Document</DialogTitle>
-            <DialogContent>
-              <Label>Document Name</Label>
-              <TextField
-                type="text"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                style={{ marginBottom: 8,width:"100%"}}
-                errorMessage = {documentErrorMessage.title ? documentErrorMessage.title : ""}
-              />
+      <Dialog hidden={!isAddDialogOpen}
+              onDismiss={closeDialog}
+              dialogContentProps={{
+                  type: DialogType.largeHeader,
+                  title: 'Add New Document'
+              }}
+              modalProps={{
+                  isBlocking: false
+              }}
+              minWidth={600}
+              maxWidth={600}>
+        <Stack tokens={{ childrenGap: 15 }}>
+          <Label>Document Name</Label>
+          <TextField
+            type="text"
+            value={newTitle}
+            onChange={(e) => setNewTitle((e.target as HTMLInputElement).value)}
+            errorMessage={documentErrorMessage.title || ""}
+          />
 
-              <Label>Document URL</Label>
-              <TextField
-                type="text"
-                value={newURL}
-                onChange={(e) => setNewURL(e.target.value)}
-                style={{ marginBottom: 8,width:"100%" }}
-                errorMessage = {documentErrorMessage.url ? documentErrorMessage.url : ""}
-              />
+          <TextField
+            type="text"
+            value={newURL}
+            onChange={(e) => setNewURL((e.target as HTMLInputElement).value)}
+            errorMessage={documentErrorMessage.url || ""}
+          />
 
-              <Label>Category</Label>
-              {documentErrorMessage.category && (
-                <Text style={{ color: "red" }}>{documentErrorMessage.category}</Text>
-              )}
-              <Dropdown
-                value={newCategory || ""}
-                placeholder="Select Category"
-                selectedOptions={newCategory ? [newCategory] : []}
-                onOptionSelect={(e, data) => {
-                    setNewCategory(data.optionValue); // Lấy giá trị từ option được chọn
-                }}
-                style={{ marginBottom: 8, width: "100%" }}
-                >
-                <Option value="Legal">Legal</Option>
-                <Option value="Technical">Technical</Option>
-                <Option value="HR">HR</Option>
-                <Option value="Insurance">Insurance</Option>
-                <Option value="Compliance">Compliance</Option>
-              </Dropdown>
-             
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={closeDialog}>Cancel</Button>
-              <Button appearance="primary" onClick={addNewDocument}>
-                Add Document
-              </Button>
-            </DialogActions>
-          </DialogBody>
-        </DialogSurface>
+
+          <Label>Category</Label>
+          {documentErrorMessage.category && (
+            <Text style={{ color: "red" }}>{documentErrorMessage.category}</Text>
+          )}
+          <Dropdown
+            placeholder="Select Category"
+            options={[
+              { key: "Legal", text: "Legal" },
+              { key: "Technical", text: "Technical" },
+              { key: "HR", text: "HR" },
+              { key: "Insurance", text: "Insurance" },
+              { key: "Compliance", text: "Compliance" }
+            ]}
+            selectedKey={newCategory || ""}
+            onChange={(_, option) => setNewCategory(option?.key as string || "")}
+            styles={{ root: { width: "100%" } }}
+          />
+        </Stack>
+
+        <DialogFooter>
+          <DefaultButton onClick={closeDialog} text="Cancel" />
+          <PrimaryButton onClick={addNewDocument} text="Add Document" styles={{ root: { backgroundColor: 'black', color: 'white' }, rootHovered: { backgroundColor: 'darkgray' } }} />
+        </DialogFooter>
       </Dialog>
+
 
       {/* Shared Document Dialog */}
-      <Dialog open={isSharedDialogOpen} onOpenChange={closeDialog}>
-        <DialogSurface>
-          <DialogBody>
-            <DialogTitle>Share Document: {shareDialogTitle}</DialogTitle>
-            <DialogContent>
-              <Label>Document Name</Label>
-              <Dropdown
-                placeholder="Select Recipient"
-                selectedOptions={userId ? [userId.toString()] : []}
-                onOptionSelect={(e, data) => setUserId(Number(data.optionValue))}
-                style={{width:"100%"}}
-              >
-                {users.map((user) => (
-                  <Option key={user.id} value={user.id.toString()}>
-                    {user.name}
-                  </Option>
-                ))}
-              </Dropdown>
+      <Dialog hidden={!isSharedDialogOpen}
+              onDismiss={closeDialog}
+              dialogContentProps={{
+                  type: DialogType.largeHeader,
+                  title: `Share Document: ${shareDialogTitle}`
+              }}
+              modalProps={{
+                  isBlocking: false
+              }}
+              minWidth={600}
+              maxWidth={600}>
+        <Stack tokens={{ childrenGap: 15 }}>
+          <Label>Recipient</Label>
+          <Dropdown
+            placeholder="Select Recipient"
+            options={users.map(user => ({ key: user.id.toString(), text: user.name }))}
+            selectedKey={userId ? userId.toString() : ""}
+            onChange={(_, option) => setUserId(Number(option?.key))}
+            styles={{ root: { width: "100%" } }}
+          />
 
-              <Label>Document Name</Label>
-              <Dropdown
-                placeholder="Select Action"
-                selectedOptions={authorize ? [authorize] : []}
-                onOptionSelect={(e, data) => setAuthorize(data.optionValue)}
-                style={{width:"100%"}}
-              >
-                <Option value="Needs to Sign">Needs to Sign</Option>
-                <Option value="Needs to View">Needs to View</Option>
-              </Dropdown>
+          <Label>Action</Label>
+          <Dropdown
+            placeholder="Select Action"
+            options={[
+              { key: "Needs to Sign", text: "Needs to Sign" },
+              { key: "Needs to View", text: "Needs to View" }
+            ]}
+            selectedKey={authorize || ""}
+            onChange={(_, option) => setAuthorize(option?.key as string || "")}
+            styles={{ root: { width: "100%" } }}
+          />
 
-              <Button onClick={addShareRecipient} appearance="primary" 
-                    style={{width:"100%", marginTop:15, marginBottom:15}}>
-                Add Recipient
-              </Button>
+          <PrimaryButton onClick={addShareRecipient} text="Add Recipient"
+                         styles={{ root: { width: "100%", marginTop: 15, marginBottom: 15 } }} />
 
-              {documents
-                .find((d) => d.Id === documentId)
-                ?.SharedWith.map((share, index) => (
-                  <Stack horizontal key={index} horizontalAlign="space-between"
-                    style={{width:"100%", marginTop:15, marginBottom:15}}>
-                    <Text>
-                      {getUser(share.UserId)?.name}: {share.Authorize}
-                    </Text>
-                    <Button
-                      icon={<PersonDelete24Filled />}
-                      onClick={() =>
-                        deleteShareRecipient(share.UserId, share.Authorize)
-                      }
-                    />
-                  </Stack>
-                ))}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={closeDialog}>Close</Button>
-            </DialogActions>
-          </DialogBody>
-        </DialogSurface>
+          {documents.find((d) => d.Id === documentId)?.SharedWith.map((share, index) => (
+           <Stack horizontal key={index} horizontalAlign="space-between"
+           styles={{ root: { width: "100%", marginTop: 15, marginBottom: 15 } }}>
+            <Text>
+              {getUser(share.UserId)?.name}: {Array.isArray(share.Authorize) ? share.Authorize.join(", ") : ""}
+            </Text>
+            <IconButton 
+              iconProps={{ iconName: "UserRemove" }}
+              onClick={() => deleteShareRecipient(share.UserId)} 
+              styles={{ root: { color: "#000000" } }}
+            >
+              <PersonDelete24Filled />
+            </IconButton>
+          </Stack>
+    
+          ))}
+        </Stack>
+
+        <DialogFooter>
+          <DefaultButton onClick={closeDialog} text="Close" />
+        </DialogFooter>
       </Dialog>
+
 
       {/* Draft Document Dialog */}
-      <Dialog open={isDraftDialogOpen} onOpenChange={closeDialog}>
-        <DialogSurface>
-        <DialogBody> {/* Container phải có relative để định vị tuyệt đối bên trong */}
-  
-        {/* Nút Close ở góc phải */}
-        <Button
-            icon={<Dismiss24Regular />}
+      <Dialog hidden={!isDraftDialogOpen}
+              onDismiss={closeDialog}
+              dialogContentProps={{
+                  type: DialogType.largeHeader,
+                  title: draftDialogTitle
+              }}
+              modalProps={{
+                  isBlocking: false
+              }}
+              minWidth={600}
+              maxWidth={600}>
+        <Stack tokens={{ childrenGap: 15 }} style={{position: "relative"}}>
+          <IconButton
+            iconProps={{ iconName: "Cancel" }}
             onClick={closeDialog}
-            style={{
-            position: 'absolute',
-            top: 16,     // khoảng cách từ trên xuống
-            right: 16,   // khoảng cách từ phải vào
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer'
+            styles={{
+              root: {
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }
             }}
-        />
+          />
 
-        {/* Nội dung Dialog */}
-        <DialogTitle>{draftDialogTitle}</DialogTitle>
+          <Label style={{ textAlign: 'center', fontWeight: 'bold' }}>{draftDialogTitle}</Label>
 
-        <DialogContent>
-        <DialogContent style={{ textAlign: 'center', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
-            <Text variant="large" style={{ fontWeight: 'normal' }}>
-                Preview of {draftDialogTitle}
+          <Stack styles={{
+            root: {
+              textAlign: 'center',
+              height: '200px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#f5f5f5'
+            }
+          }}>
+            <Text variant="large" styles={{ root: { fontWeight: 'normal' } }}>
+              Preview of {draftDialogTitle}
             </Text>
-            <Label style={{ opacity: 0.1, fontSize: '4rem', color: 'gray' }}>
-                DRAFT
+            <Label styles={{ root: { opacity: 0.1, fontSize: '4rem', color: 'gray' } }}>
+              DRAFT
             </Label>
-            </DialogContent>
-        </DialogContent>
+          </Stack>
+        </Stack>
 
-        </DialogBody>
-
-        </DialogSurface>
+        <DialogFooter>
+          <DefaultButton onClick={closeDialog} text="Close" />
+        </DialogFooter>
       </Dialog>
+
     </Stack>
   );
 };

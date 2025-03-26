@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   Stack,
-  DefaultButton,
   PrimaryButton,
   IconButton,
   Panel,
@@ -19,37 +18,30 @@ import {
   Delete20Filled,
   Dismiss20Filled
 } from "@fluentui/react-icons";
+import type { 
+  Document,
+  Memo,
+  User,
+  Task, 
+  Step,
+} from "../types/Interface";
 
-import { User, initialUsers } from './Participants';
-import { Task, initialTasks } from './Tasks';
-import { initialDocuments, Document } from './Documents';
-import { Step, initialSteps } from './ClosingSteps';
-
-interface Memo {
-  id: number;
-  createdDate: Date;
-  description: string;
-  participants: User[];
+interface MemosProps {
+  memos: Memo[];
+  users: User[];
   tasks: Task[];
   documents: Document[];
   steps: Step[];
+  setMemos: React.Dispatch<React.SetStateAction<Memo[]>>;
 }
 
-const initialMemos: Memo[] = [];
-
-const ClosingMemo = () => {
-  const [memos, setMemos] = useState(initialMemos);
+const ClosingMemo = ({memos, users, tasks, documents, steps, setMemos} : MemosProps) => {
   const [memoId, setMemoId] = useState(0);
   const [memoDate, setMemoDate] = useState(new Date());
   const [memoParticipants, setMemoParticipants] = useState<User[]>();
-  const [memoTasks, setMemoTasks] = useState<Task[]>();
+  const [_, setMemoTasks] = useState<Task[]>();
   const [memoClosingStep, setMemoClosingStep] = useState<Step[]>();
   const [memoDocuments, setMemoDocuments] = useState<Document[]>();
-
-  const [users] = useState<User[]>(initialUsers);
-  const [tasks] = useState<Task[]>(initialTasks);
-  const [documents] = useState<Document[]>(initialDocuments);
-  const [steps] = useState<Step[]>(initialSteps);
 
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 

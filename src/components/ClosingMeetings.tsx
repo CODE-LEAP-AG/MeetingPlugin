@@ -23,20 +23,13 @@ import {
   Mic24Filled,
   Document24Filled,
 } from "@fluentui/react-icons";
+import type {Recording} from "../types/Interface";
 
-interface Recording {
-  id: number;
-  recordingName: string;
-  date: Date;
-  transcripted: boolean;
-  transcript: string;
+
+interface ClosingMeetingProps {
+  recordings: Recording[];
+  setRecordings: React.Dispatch<React.SetStateAction<Recording[]>>;
 }
-
-const initialRecordings: Recording[] = [
-  { id: 1, recordingName: "Closing Meeting 1", date: new Date("2024-01-01 10:00"), transcripted: false, transcript: "" },
-  { id: 2, recordingName: "Closing Meeting 2", date: new Date("2024-06-15 14:00"), transcripted: false, transcript: "This is the transcript <br/>" },
-  { id: 3, recordingName: "Closing Meeting 3", date: new Date("2024-09-30 23:00"), transcripted: false, transcript: "" },
-];
 
 const useStyles = mergeStyleSets({
     container: {
@@ -51,19 +44,10 @@ const useStyles = mergeStyleSets({
         alignItems: 'center',
         marginBottom: 20,
         marginTop:10
-    },
-    permissionButton: {
-        marginRight: 8
-    },
-    tableBody: {
-    },
-    tableCell: {
-        alignItems: 'center'
     }
 });
 
-const ClosingMeetings = () => {
-  const [recordings, setRecordings] = useState<Recording[]>(initialRecordings);
+const ClosingMeetings = ({ recordings, setRecordings }: ClosingMeetingProps) => {
   const [recording, setRecording] = useState<Recording>({
     id: 0,
     recordingName: "",
@@ -84,6 +68,7 @@ const ClosingMeetings = () => {
   const toggleRecording = () => {
     setIsRecording(!isRecording);
     if (isRecording) {
+      recordings.find((rec) => rec.recordingName === `recordings.length + 1`);
       const newRecord = {
         id: recordings.length + 1,
         recordingName: "Closing Meeting " + (recordings.length + 1),
@@ -178,7 +163,7 @@ const ClosingMeetings = () => {
         isEditing === item.id ? (
           <TextField
             value={editedName}
-            onChange={(e, newValue) => setEditedName(newValue || '')}
+            onChange={(_, newValue) => setEditedName(newValue || '')}
             onBlur={() => handleSave(item.id)}
             onKeyDown={(e) => {
               if (e.key === 'Enter'){
@@ -328,7 +313,6 @@ const ClosingMeetings = () => {
             </Text>
         </Stack>
         </Dialog>
-
 
         {/* General Dialog */}
         <Dialog

@@ -11,52 +11,33 @@ import {
 } from "@fluentui/react";
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import ClosingMemo from "./ClosingMemo";
-import {
-    Delete24Filled,
-  } from "@fluentui/react-icons";
-
+import { Delete24Filled } from "@fluentui/react-icons";
 import { IIconProps } from '@fluentui/react/lib/Icon';
+
+import {
+    Step,
+    Task, 
+    Memo, 
+    User,
+    Document
+} from "../types/Interface";
+import {
+    Task_Step_Status as Status,
+    taskStepStatusColors as StatusColors,
+} from "../types/Enum";
 
 const addIcon: IIconProps = { iconName: 'Add' };
 const deleteIcon: IIconProps = { iconName: 'Delete' };
 
-enum Status {
-    Pending = "Pending",
-    Complete = "Complete",
-    In_Progress = "In Progress",
+interface StepsProps {
+  memos: Memo[];
+  users: User[];
+  steps: Step[];
+  tasks: Task[];
+  documents: Document[];
+  setSteps: React.Dispatch<React.SetStateAction<Step[]>>;
+  setMemos: React.Dispatch<React.SetStateAction<Memo[]>>;
 }
-
-export interface Step {
-    stepNumber: number;
-    stepDescription: string;
-    tasks: Task[];
-    status: Status;
-}
-
-export interface Task {
-    taskId: number;
-    taskDescription: string;
-    status: Status;
-}
-
-export const initialSteps: Step[] = [
-    { stepNumber: 1, stepDescription: "Initial Due Intelligence", tasks: [], status: Status.Pending },
-    { stepNumber: 2, stepDescription: "Contract Negotiation", tasks: [], status: Status.Pending },
-    { stepNumber: 3, stepDescription: "Financial Arrangements", tasks: [], status: Status.Pending },
-    { stepNumber: 4, stepDescription: "Final Inspections", tasks: [], status: Status.Pending },
-    { stepNumber: 5, stepDescription: "Closing and Transfer of Ownership", tasks: [], status: Status.Pending },
-];
-
-export const initialTasks: Task[] = [
-    { taskId: 1, taskDescription: "Review Purchase Agreement (Purchase Agreement)", status: Status.Pending },
-    { taskId: 2, taskDescription: "Verify Bunker Fuel Quantity (Fuel and Cargo Agreement)", status: Status.Complete },
-    { taskId: 3, taskDescription: "Confirm Vessel Classification Status (Vessel Classification Certificate)", status: Status.In_Progress },
-    { taskId: 4, taskDescription: "Update Financial Due Diligence Report (Financial Due Diligence Report)", status: Status.Pending },
-    { taskId: 5, taskDescription: "Verify Insurance Policy Expiration (Insurance Policy)", status: Status.Complete },
-    { taskId: 6, taskDescription: "Confirm Final Purchase Price (Purchase Agreement)", status: Status.In_Progress },
-    { taskId: 7, taskDescription: "Prepare Crew Handover Documentation (Crew Handover Agreement)", status: Status.Pending },
-    { taskId: 8, taskDescription: "Confirm Bunker Fuel Transfer Arrangements (Fuel Transfer Agreement)", status: Status.Complete },
-];
 
 const useStyles = mergeStyleSets({
     container: {
@@ -68,152 +49,138 @@ const useStyles = mergeStyleSets({
     header: {
         display: 'flex',
         justifyContent: 'space-between',
-        marginBottom: 20
+        marginBottom: 50
     },
-    permissionButton: {
-        marginRight: 8
-    },
-    tableBody: {
-    },
-    tableCell: {
-        alignItems: 'center'
+    button: {
+        root: { height: 50, backgroundColor: "black" },
+        rootHovered: { backgroundColor: "darkgray" },
+        label: { fontWeight: 'bold' }
     }
 });
 
+const StatusTag = ({ status }: { status: Status }) => {
+    const color = StatusColors[status] || {};
+    return (
+        <Text
+            variant="medium"
+            styles={{
+                root: {
+                    backgroundColor: color.backgroundColor,
+                    color: color.textColor,
+                    borderRadius: 4,
+                    padding: '4px 12px',
+                    border: '2px solid'
+                }
+            }}
+        >
+            {status}
+        </Text>
+    );
+};
 
-const ClosingSteps = () => {
-    const [steps, setSteps] = useState<Step[]>(initialSteps);
-    const [newStepDescription, setNewStepDescription] = useState<string>("");
-    const [selectedTask, setSelectedTask] = useState<(number | null)[]>(Array(steps.length).fill(null));
+const ClosingSteps = ({memos, users, documents, steps, tasks, setSteps, setMemos} : StepsProps) => {
+    const [newStepDescription, setNewStepDescription] = useState("");
+    const [selectedTasks, setSelectedTasks] = useState<Record<number, number | null>>({});
     const [error, setError] = useState(false);
     const [helperText, setHelperText] = useState('');
 
-    const getStatusColors = (status: Status) => {
-        switch (status) {
-            case Status.Pending:
-                return { backgroundColor: "#fef08a", textColor: "#854D0E" };
-            case Status.In_Progress:
-                return { backgroundColor: "#bfdbfe", textColor: "#1e40af" };
-            case Status.Complete:
-                return { backgroundColor: "#bbf7d0", textColor: "#166534" };
-            default:
-                return { backgroundColor: "#ffffff", textColor: "#000000" };
-        }
-    };
-
+    const DeleteButton = ({ onClick, tooltip }: { onClick: () => void, tooltip: string }) => (
+        <TooltipHost content={tooltip}>
+            <IconButton iconProps={deleteIcon} onClick={onClick}>
+                <Delete24Filled primaryFill="#000000" />
+            </IconButton>
+        </TooltipHost>
+    );
     const handleAddStep = () => {
         if (!newStepDescription.trim()) {
             setError(true);
             setHelperText("This field is required");
-        } else {
-            setError(false);
-            setHelperText("");
-            const nextStepNumber = steps.length + 1;
-            setSteps([...steps, {
-                stepNumber: nextStepNumber,
+            return;
+        }
+
+        setSteps(prev => [
+            ...prev,
+            {
+                stepNumber: prev.length + 1,
                 stepDescription: newStepDescription,
                 tasks: [],
                 status: Status.Pending
-            }]);
-            setNewStepDescription("");
-        }
+            }
+        ]);
+
+        setNewStepDescription("");
+        setError(false);
+        setHelperText("");
     };
 
     const handleDeleteStep = (stepNumber: number) => {
-        const updatedSteps = steps.filter(step => step.stepNumber !== stepNumber);
-        const reorderedSteps = updatedSteps.map((step, index) => ({
-            ...step,
-            stepNumber: index + 1
-        }));
-        setSteps(reorderedSteps);
+        setSteps(prev =>
+            prev.filter(step => step.stepNumber !== stepNumber)
+                .map((step, idx) => ({ ...step, stepNumber: idx + 1 }))
+        );
     };
 
-    const handleAddTask = (stepNumber: number, index: number) => {
-        const taskId = selectedTask[index];
-        if (taskId !== null) {
-            const taskToAdd = initialTasks.find(task => task.taskId === taskId);
-            if (taskToAdd) {
-                setSteps(prevSteps => {
-                    return prevSteps.map(step => {
-                        if (step.stepNumber === stepNumber) {
-                            const updatedTask = {
-                                taskId: taskToAdd.taskId,
-                                taskDescription: taskToAdd.taskDescription,
-                                status: taskToAdd.status
-                            };
-    
-                            const updatedTasks = [...step.tasks, updatedTask];
-    
-                            return {
-                                ...step,
-                                tasks: updatedTasks,
-                                status: updateStepStatus({ ...step, tasks: updatedTasks })
-                            };
-                        }
-                        return step;
-                    });
-                });
-    
-                // ✅ Reset dropdown value sau khi add xong
-                setSelectedTask(prev => {
-                    const newSelected = [...prev];
-                    newSelected[index] = null;
-                    return newSelected;
-                });
-            }
-        }
-    };
-    
+    const handleAddTask = (stepNumber: number) => {
+        const taskId = selectedTasks[stepNumber];
+        if (taskId === null || taskId === undefined) return;
 
-    const handleDeleteTask = (stepNumber: number, taskId: number) => {
-        setSteps(prevSteps => {
-            return prevSteps.map(step => {
+        const taskToAdd = tasks.find(task => task.id === taskId);
+        if (!taskToAdd) return;
+
+        setSteps(prev =>
+            prev.map(step => {
                 if (step.stepNumber === stepNumber) {
-                    const updatedTasks = step.tasks.filter(task => task.taskId !== taskId);
+                    const updatedTasks = [...step.tasks, taskToAdd];
                     return {
                         ...step,
                         tasks: updatedTasks,
-                        status: updateStepStatus({ ...step, tasks: updatedTasks })
+                        status: updateStepStatus(updatedTasks)
                     };
                 }
                 return step;
-            });
-        });
+            })
+        );
+
+        setSelectedTasks(prev => ({ ...prev, [stepNumber]: null }));
     };
 
-    const updateStepStatus = (step: Step): Status => {
-        const tasks = step.tasks;
+    const handleDeleteTask = (stepNumber: number, taskId: number) => {
+        setSteps(prev =>
+            prev.map(step => {
+                if (step.stepNumber === stepNumber) {
+                    const updatedTasks = step.tasks.filter(task => task.id !== taskId);
+                    return {
+                        ...step,
+                        tasks: updatedTasks,
+                        status: updateStepStatus(updatedTasks)
+                    };
+                }
+                return step;
+            })
+        );
+    };
+
+    const updateStepStatus = (tasks: Task[]): Status => {
         if (tasks.length === 0) return Status.Complete;
-
-        const allPending = tasks.every(task => task.status === Status.Pending);
-        const allCompleted = tasks.every(task => task.status === Status.Complete);
-        const anyInProgress = tasks.some(task => task.status === Status.In_Progress);
-
-        if (allPending) return Status.Pending;
-        if (anyInProgress) return Status.In_Progress;
-        if (allCompleted) return Status.Complete;
-
+        if (tasks.every(task => task.status === Status.Complete)) return Status.Complete;
+        if (tasks.some(task => task.status === Status.In_Progress)) return Status.In_Progress;
         return Status.Pending;
     };
 
     const handleDragEnd = (result: any) => {
         if (!result.destination) return;
-        const reorderedSteps = Array.from(steps);
+
+        const reorderedSteps = [...steps];
         const [removed] = reorderedSteps.splice(result.source.index, 1);
         reorderedSteps.splice(result.destination.index, 0, removed);
 
-        const updatedSteps = reorderedSteps.map((step, index) => ({
-            ...step,
-            stepNumber: index + 1
-        }));
-
-        setSteps(updatedSteps);
+        setSteps(reorderedSteps.map((step, idx) => ({ ...step, stepNumber: idx + 1 })));
     };
 
     return (
         <Stack tokens={{ childrenGap: 20 }} className={useStyles.container}>
             <Stack>
-                <Stack horizontalAlign="space-between" className={useStyles.header} style={{marginBottom:50}}>
+                <Stack horizontalAlign="space-between" className={useStyles.header}>
                     <Text variant="xLargePlus" styles={{ root: { fontWeight: 'bold', textAlign:"left", marginBottom: 50, marginTop:10} }}>
                         Closing Step Management
                     </Text>
@@ -232,26 +199,27 @@ const ClosingSteps = () => {
                             text="Add Step"
                             onClick={handleAddStep}
                             styles={{
-                                root: {
+                                root: { 
                                     height: 50,
                                     width: 250,
-                                    backgroundColor: "black",
+                                    backgroundColor: "black", 
                                 },
                                 rootHovered: {
                                     backgroundColor: 'darkgray'
                                 },
-                                label: { fontWeight: 'bold', fontSize: 17, }
+                                label: { fontWeight: 'bold' }
                             }}
                         />
                     </Stack>
                 </Stack>
+
                 <DragDropContext onDragEnd={handleDragEnd}>
                     <Droppable droppableId="steps">
-                        {(provided) => (
+                        {(provided: any) => (
                             <div ref={provided.innerRef} {...provided.droppableProps}>
                                 {steps.map((step, index) => (
                                     <Draggable key={step.stepNumber} draggableId={String(step.stepNumber)} index={index}>
-                                        {(provided) => (
+                                        {(provided: any) => (
                                             <div
                                                 ref={provided.innerRef}
                                                 {...provided.draggableProps}
@@ -264,73 +232,50 @@ const ClosingSteps = () => {
                                                 }}
                                             >
                                                 <Stack horizontal horizontalAlign="space-between" verticalAlign="center">
-                                                    <Text variant="large" style={{fontWeight:"bold"}}>
+                                                    <Text variant="large" styles={{ root: { fontWeight: "bold" } }}>
                                                         Step {step.stepNumber}: {step.stepDescription}
                                                     </Text>
                                                     <Stack horizontal tokens={{ childrenGap: 5 }}>
-                                                        <Text
-                                                            variant="medium"
-                                                            styles={{
-                                                                root: {
-                                                                    backgroundColor: getStatusColors(step.status).backgroundColor,
-                                                                    color: getStatusColors(step.status).textColor,
-                                                                    borderRadius: 4,
-                                                                    padding: '4px 12px',
-                                                                    border: '2px solid'
-                                                                }
-                                                            }}
-                                                        >
-                                                            {step.status}
-                                                        </Text>
-                                                        <TooltipHost content="Delete Step">
-                                                            <IconButton
-                                                                iconProps={deleteIcon}
-                                                                onClick={() => handleDeleteStep(step.stepNumber)}
-                                                            >
-                                                                <Delete24Filled primaryFill="#000000" />
-                                                            </IconButton>
-                                                        </TooltipHost>
+                                                        <StatusTag status={step.status} />
+                                                        <DeleteButton onClick={() => handleDeleteStep(step.stepNumber)} tooltip="Delete Step" />
                                                     </Stack>
                                                 </Stack>
 
                                                 <Stack horizontal verticalAlign="end" tokens={{ childrenGap: 10 }} styles={{ root: { marginTop: 10 } }}>
-                                                <Dropdown
-                                                    placeholder="Select a task to add"
-                                                    options={[
-                                                        { key: 'placeholder', text: 'Select a task to add', disabled: true }, // Khoá option này lại
-                                                        ...initialTasks
-                                                            .filter(task => !step.tasks.some(t => t.taskId === task.taskId))
-                                                            .map(task => ({ key: task.taskId, text: task.taskDescription }))
-                                                    ]}
-                                                    selectedKey={selectedTask[index] ?? 'placeholder'} // Set mặc định là placeholder nếu chưa chọn gì
-                                                    onChange={(_, option) => {
-                                                        if (option && option.key !== 'placeholder') {
-                                                            const newSelected = [...selectedTask];
-                                                            newSelected[index] = Number(option.key);
-                                                            setSelectedTask(newSelected);
-                                                        }
-                                                    }}
-                                                    styles={{ 
-                                                        dropdown: { width: 600, margin: 10},
-                                                    }}
-                                                />
+                                                    <Dropdown
+                                                        placeholder="Select a task to add"
+                                                        options={[
+                                                            { key: 'placeholder', text: 'Select a task to add', disabled: true },
+                                                            ...tasks
+                                                                .filter(task => !step.tasks.some(t => t.id === task.id))
+                                                                .map(task => ({ key: task.id, text: task.name }))
+                                                        ]}
+                                                        selectedKey={selectedTasks[step.stepNumber] ?? 'placeholder'}
+                                                        onChange={(_, option) => {
+                                                            if (option && option.key !== 'placeholder') {
+                                                                setSelectedTasks(prev => ({ ...prev, [step.stepNumber]: Number(option.key) }));
+                                                            }
+                                                        }}
+                                                        styles={{ dropdown: { width: 600, margin: 10 } }}
+                                                        calloutProps={{ styles: { calloutMain: { maxHeight: 200, overflowY: 'auto' } } }} 
+                                                    />
                                                     <PrimaryButton
                                                         iconProps={addIcon}
                                                         text="Add Task"
-                                                        disabled={selectedTask[index] === null}
-                                                        onClick={() => handleAddTask(step.stepNumber, index)}
-                                                        styles={{
+                                                        disabled={selectedTasks[step.stepNumber] === null || selectedTasks[step.stepNumber] === undefined}
+                                                        onClick={() => handleAddTask(step.stepNumber)}
+                                                        styles={{ 
                                                             root: { backgroundColor: "black", margin:10},
                                                             rootHovered: { backgroundColor: "darkgray" },
-                                                            label: { fontWeight: 'bold' },
-                                                        }}
+                                                            label: { fontWeight: 'bold' }
+                                                            }}
                                                     />
                                                 </Stack>
 
                                                 <Stack tokens={{ childrenGap: 5 }} styles={{ root: { marginTop: 10 } }}>
                                                     {step.tasks.map((task, taskIndex) => (
                                                         <Stack
-                                                            key={task.taskId}
+                                                            key={task.id}
                                                             horizontal
                                                             horizontalAlign="space-between"
                                                             verticalAlign="center"
@@ -343,15 +288,13 @@ const ClosingSteps = () => {
                                                                 }
                                                             }}
                                                         >
-                                                            <Text>
-                                                                <b>{taskIndex + 1}.</b> {task.taskDescription}
-                                                            </Text>
+                                                            <Text><b>{taskIndex + 1}.</b> {task.name}</Text>
                                                             <Stack horizontal tokens={{ childrenGap: 5 }} verticalAlign="center">
                                                                 <Text
                                                                     styles={{
                                                                         root: {
-                                                                            backgroundColor: getStatusColors(task.status).backgroundColor,
-                                                                            color: getStatusColors(task.status).textColor,
+                                                                            backgroundColor: StatusColors[task.status].backgroundColor,
+                                                                            color: StatusColors[task.status].textColor,
                                                                             borderRadius: 4,
                                                                             padding: '2px 8px',
                                                                             fontSize: 14,
@@ -361,15 +304,7 @@ const ClosingSteps = () => {
                                                                 >
                                                                     {task.status}
                                                                 </Text>
-                                                                <TooltipHost content="Delete Task">
-                                                                    <IconButton
-                                                                        iconProps={deleteIcon}
-                                                                        styles={{ root: { color: "#999999" } }}
-                                                                        onClick={() => handleDeleteTask(step.stepNumber, task.taskId)}
-                                                                    >
-                                                                        <Delete24Filled primaryFill="#000000" />
-                                                                    </IconButton>
-                                                                </TooltipHost>
+                                                                <DeleteButton onClick={() => handleDeleteTask(step.stepNumber, task.id)} tooltip="Delete Task" />
                                                             </Stack>
                                                         </Stack>
                                                     ))}
@@ -383,8 +318,15 @@ const ClosingSteps = () => {
                         )}
                     </Droppable>
                 </DragDropContext>
-            </Stack>
-            <ClosingMemo />
+            </Stack>           
+                <ClosingMemo 
+                memos={memos}
+                users={users}
+                tasks={tasks}
+                documents={documents}
+                steps={steps}
+                setMemos={setMemos}/>
+            
         </Stack>
     );
 };
