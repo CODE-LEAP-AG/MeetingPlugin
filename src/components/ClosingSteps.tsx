@@ -130,7 +130,7 @@ const ClosingSteps = ({memos, users, documents, steps, tasks, setSteps, setMemos
         setSteps(prev =>
             prev.map(step => {
                 if (step.stepNumber === stepNumber) {
-                    const updatedTasks = [...step.tasks, taskToAdd];
+                    const updatedTasks = [...step.tasks, taskToAdd.id];
                     return {
                         ...step,
                         tasks: updatedTasks,
@@ -148,7 +148,7 @@ const ClosingSteps = ({memos, users, documents, steps, tasks, setSteps, setMemos
         setSteps(prev =>
             prev.map(step => {
                 if (step.stepNumber === stepNumber) {
-                    const updatedTasks = step.tasks.filter(task => task.id !== taskId);
+                    const updatedTasks = step.tasks.filter(task => task !== taskId);
                     return {
                         ...step,
                         tasks: updatedTasks,
@@ -159,11 +159,24 @@ const ClosingSteps = ({memos, users, documents, steps, tasks, setSteps, setMemos
             })
         );
     };
-
-    const updateStepStatus = (tasks: Task[]): Status => {
-        if (tasks.length === 0) return Status.Complete;
-        if (tasks.every(task => task.status === Status.Complete)) return Status.Complete;
-        if (tasks.some(task => task.status === Status.In_Progress)) return Status.In_Progress;
+    const updateStepStatus = (idList: number[]): Status => {
+        // Lọc danh sách task có id trong idList
+        const filteredTasks = tasks.filter(task => idList.includes(task.id));
+    
+        // Nếu không có task nào được tìm thấy -> coi như đã hoàn thành
+        if (filteredTasks.length === 0) return Status.Complete;
+    
+        // Nếu tất cả các task đã hoàn thành -> return Status.Complete
+        if (filteredTasks.every(task => task.status === Status.Complete)) {
+            return Status.Complete;
+        }
+    
+        // Nếu có ít nhất một task đang In_Progress -> return Status.In_Progress
+        if (filteredTasks.some(task => task.status === Status.In_Progress)) {
+            return Status.In_Progress;
+        }
+    
+        // Mặc định -> return Status.Pending
         return Status.Pending;
     };
 
@@ -250,7 +263,7 @@ const ClosingSteps = ({memos, users, documents, steps, tasks, setSteps, setMemos
                                                         options={[
                                                             { key: 'placeholder', text: 'Select a task to add', disabled: true },
                                                             ...tasks
-                                                                .filter(task => !step.tasks.some(t => t.id === task.id))
+                                                                .filter(task => !step.tasks.some(t => t === task.id))
                                                                 .map(task => ({ key: task.id, text: task.name }))
                                                         ]}
                                                         selectedKey={selectedTasks[step.stepNumber] ?? 'placeholder'}
@@ -276,9 +289,9 @@ const ClosingSteps = ({memos, users, documents, steps, tasks, setSteps, setMemos
                                                 </Stack>
 
                                                 <Stack tokens={{ childrenGap: 5 }} styles={{ root: { marginTop: 10 } }}>
-                                                    {step.tasks.map((task, taskIndex) => (
+                                                    {step.tasks.map((taskId, taskIndex) => (
                                                         <Stack
-                                                            key={task.id}
+                                                            key={taskId}
                                                             horizontal
                                                             horizontalAlign="space-between"
                                                             verticalAlign="center"
@@ -291,13 +304,14 @@ const ClosingSteps = ({memos, users, documents, steps, tasks, setSteps, setMemos
                                                                 }
                                                             }}
                                                         >
-                                                            <Text><b>{taskIndex + 1}.</b> {task.name}</Text>
+                                                            <Text>  <b>{taskIndex + 1}.</b> {tasks.find(task => task.id === taskId)?.name}
+                                                            </Text>
                                                             <Stack horizontal tokens={{ childrenGap: 5 }} verticalAlign="center">
                                                                 <Text
                                                                     styles={{
                                                                         root: {
-                                                                            backgroundColor: StatusColors[task.status].backgroundColor,
-                                                                            color: StatusColors[task.status].textColor,
+                                                                            backgroundColor: StatusColors[tasks.find(task => task.id === taskId)?.status || Status.Pending].backgroundColor,
+                                                                            color: StatusColors[tasks.find(task => task.id === taskId)?.status || Status.Pending].textColor,
                                                                             borderRadius: 4,
                                                                             padding: '2px 8px',
                                                                             fontSize: 14,
@@ -305,9 +319,9 @@ const ClosingSteps = ({memos, users, documents, steps, tasks, setSteps, setMemos
                                                                         }
                                                                     }}
                                                                 >
-                                                                    {task.status}
+                                                                    {tasks.find(task => task.id === taskId)?.status}
                                                                 </Text>
-                                                                <DeleteButton onClick={() => handleDeleteTask(step.stepNumber, task.id)} tooltip="Delete Task" />
+                                                                <DeleteButton onClick={() => handleDeleteTask(step.stepNumber, taskId)} tooltip="Delete Task" />
                                                             </Stack>
                                                         </Stack>
                                                     ))}

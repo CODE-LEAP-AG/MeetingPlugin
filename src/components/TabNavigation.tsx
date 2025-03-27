@@ -159,7 +159,9 @@ const MeetingTab = () => {
           documents={documentsData}
           tasks={tasksData}
           participants={participantsData}
+          steps={stepsData}
           setTasks={setTasksData}
+          setSteps={setStepsData}
         />)}
         {selectedTab === "documents" && (<Document 
           documents={documentsData}

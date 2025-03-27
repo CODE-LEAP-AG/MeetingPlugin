@@ -27,6 +27,7 @@ import type{
     Task,
     Document,
     User,
+    Step,
 } from "../types/Interface";
 import {
     Task_Step_Status as Status,
@@ -38,7 +39,9 @@ interface TaskProps {
   documents: Document[];
   tasks: Task[];
   participants: User[];
+  steps: Step[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  setSteps: React.Dispatch<React.SetStateAction<Step[]>>;
 }
 
 const useStyles = mergeStyleSets({
@@ -64,7 +67,7 @@ const useStyles = mergeStyleSets({
     }
 });
 
-const Task = ({documents, tasks, participants, setTasks} : TaskProps) => {
+const Task = ({documents, tasks, participants, steps, setTasks, setSteps} : TaskProps) => {
     const [dialogState, setDialogState] = useState({
         isOpen: false,
         isShareOpen: false,
@@ -221,10 +224,39 @@ const Task = ({documents, tasks, participants, setTasks} : TaskProps) => {
     };
 
     const handleStatusChange = (id: number, status: Status) => {
-        setTasks(prevTasks =>
-            prevTasks.map(task => (task.id === id ? { ...task, status } : task))
-        );
+        setTasks(prevTasks => {
+            const updatedTasks = prevTasks.map(task => (task.id === id ? { ...task, status } : task));
+    
+            setSteps(prevSteps =>
+                prevSteps.map(step => {
+                    if (step.tasks.includes(id)) {
+                        const updatedStatus = updateStepStatus(step.tasks, updatedTasks);
+                        return { ...step, status: updatedStatus };
+                    }
+                    return step;
+                })
+            );
+    
+            return updatedTasks;
+        });
     };
+    
+    const updateStepStatus = (idList: number[], updatedTasks: Task[]): Status => {
+        const filteredTasks = updatedTasks.filter(task => idList.includes(task.id));
+    
+        if (filteredTasks.length === 0) return Status.Complete;
+    
+        if (filteredTasks.every(task => task.status === Status.Complete)) {
+            return Status.Complete;
+        }
+    
+        if (filteredTasks.some(task => task.status === Status.In_Progress || task.status === Status.Complete)) {
+            return Status.In_Progress;
+        }
+    
+        return Status.Pending;
+    };
+    
 
     const commandBarItems = (task: Task) => {
         return [

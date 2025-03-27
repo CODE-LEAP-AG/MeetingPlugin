@@ -40,7 +40,7 @@ export interface Memo {
 export interface Step {
     stepNumber: number;
     stepDescription: string;
-    tasks: Task[];
+    tasks: number[];
     status: Task_Step_Status;
 }
 
