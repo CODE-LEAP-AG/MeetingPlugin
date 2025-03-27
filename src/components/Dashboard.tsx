@@ -61,6 +61,51 @@ const useStyles = mergeStyleSets({
     },
 });
 
+const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+        // Mapping màu tối hơn cho text
+        const colorMap: { [key: string]: string } = {
+            Draft: "#c58b00",
+            Approved: "#2d64c4",
+            Signed: "#2e7d32",
+            Released: "#7b3fbf",
+            Pending: "#c58b00",
+            InProgress: "#2d64c4",
+            Complete: "#2e7d32",
+        };
+
+        // Mapping tên hiển thị đẹp hơn
+        const nameMap: { [key: string]: string } = {
+            Draft: "Draft",
+            Approved: "Approved",
+            Signed: "Signed",
+            Released: "Released",
+            Pending: "Pending",
+            InProgress: "In Progress",
+            Complete: "Complete",
+        };
+
+        return (
+            <div style={{
+                background: "white",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+                boxShadow: "0px 2px 5px rgba(0,0,0,0.2)"
+            }}>
+                {payload.map((entry: any, index: number) => (
+                    <p key={index} style={{ color: colorMap[entry.dataKey], fontWeight:"bold" }}>
+                        {nameMap[entry.dataKey]}: {entry.value}
+                    </p>
+                ))}
+            </div>
+        );
+    }
+    return null;
+};
+
+
+
 const Dashboard = ({documents, steps, tasks} : dashboardProps) =>{
     const [showStatusSummary, setShowStatusSummary] = useState<boolean>(true);
     let completionPercentage = (steps.find(x => x.status === Task_Step_Status.Complete) ? 1 : 0) * 100 / (steps.length ===0? 1 : steps.length);
@@ -78,12 +123,12 @@ const Dashboard = ({documents, steps, tasks} : dashboardProps) =>{
             Signed: documents.filter(doc => doc.Status === DocumentStatus.Signed).length,
             Released: documents.filter(doc => doc.Status === DocumentStatus.Released).length,
         },
-        {
-            name: "Closing Steps",
-            Pending: steps.filter(step => step.status === Task_Step_Status.Pending).length,
-            InProgress: steps.filter(step => step.status === Task_Step_Status.In_Progress).length,
-            Complete: steps.filter(step => step.status === Task_Step_Status.Complete).length,
-        },
+        // {
+        //     name: "Closing Steps",
+        //     Pending: steps.filter(step => step.status === Task_Step_Status.Pending).length,
+        //     InProgress: steps.filter(step => step.status === Task_Step_Status.In_Progress).length,
+        //     Complete: steps.filter(step => step.status === Task_Step_Status.Complete).length,
+        // },
         {
             name: "Tasks",
             Pending: tasks.filter(task => task.status === Task_Step_Status.Pending).length,
@@ -187,18 +232,18 @@ const Dashboard = ({documents, steps, tasks} : dashboardProps) =>{
                             <span style={{fontWeight:"bold"}}>Status Summary:</span>
                         </Text>
                         <ResponsiveContainer width="100%" height={200}>
-                            <BarChart layout="vertical" data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }} style={{ padding:10}}>
+                        <BarChart layout="vertical" data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }} style={{ padding: 10 }}>
                             <XAxis type="number" />
                             <YAxis dataKey="name" type="category" />
-                            <Tooltip />
-                                <Bar dataKey="Draft" stackId="a" fill={"#fcba03"}/>
-                                <Bar dataKey="Approved" stackId="a" fill={"#75a2fd"} />
-                                <Bar dataKey="Signed" stackId="a" fill={"#89ff8e"} />
-                                <Bar dataKey="Released" stackId="a" fill={"#c893fd"} />
-                                <Bar dataKey="Pending" stackId="a" fill={"#fcba03"} />
-                                <Bar dataKey="InProgress" stackId="a" fill={"#75a2fd"} />
-                                <Bar dataKey="Complete" stackId="a" fill={"#89ff8e"} />
-                            </BarChart>
+                            <Tooltip content={<CustomTooltip />} />
+                            <Bar dataKey="Draft" stackId="a" fill={"#fcba03"} />
+                            <Bar dataKey="Approved" stackId="a" fill={"#75a2fd"} />
+                            <Bar dataKey="Signed" stackId="a" fill={"#89ff8e"} />
+                            <Bar dataKey="Released" stackId="a" fill={"#c893fd"} />
+                            <Bar dataKey="Pending" stackId="a" fill={"#fcba03"} />
+                            <Bar dataKey="InProgress" stackId="a" fill={"#75a2fd"} />
+                            <Bar dataKey="Complete" stackId="a" fill={"#89ff8e"} />
+                        </BarChart>
                         </ResponsiveContainer>
                     </Stack> 
                     )}

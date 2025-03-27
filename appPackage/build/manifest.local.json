@@ -28,7 +28,7 @@
     "staticTabs": [
         {
             "entityId": "index",
-            "name": "Home",
+            "name": "Assentiri",
             "contentUrl": "https://localhost:53000/index.html#/tab",
             "websiteUrl": "https://localhost:53000/index.html#/tab",
             "scopes": [
